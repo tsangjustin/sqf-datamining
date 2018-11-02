@@ -11,7 +11,7 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/data/sqf-2017.csv"
+file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/1-Clean_outliers_and_null.csv"
 
 # df <- read.csv(
 #   file=file_path,
@@ -29,14 +29,25 @@ df <- read.csv(
   stringsAsFactors = FALSE
 )
 
-features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
-              "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
-              "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
-              "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
-              "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
-              "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
-              "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "SUSPECT_HEIGHT", "SUSPECT_WEIGHT",
-              "STOP_LOCATION_PRECINCT")
+# features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
+#               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
+#               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
+#               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
+#               "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
+#               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
+#               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "SUSPECT_HEIGHT", "SUSPECT_WEIGHT",
+#               "STOP_LOCATION_PRECINCT")
+# features <- c("SUSPECTED_CRIME_DESCRIPTION",
+#               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
+#               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
+#               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
+#               "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
+#               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
+#               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION",
+#               "STOP_LOCATION_PRECINCT")
+features <- c("SUSPECTED_CRIME_DESCRIPTION",
+              "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
+              "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG")
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
@@ -110,3 +121,19 @@ for (k in k_seq) {
   print(table_k)
   print(paste("Accuracy: ", accuracy_k))
 }
+
+##### CART #####
+# library(rpart)
+# library(rpart.plot) # Enhance tree plot
+# library(rattle) # Fancy tree plot
+# library(RColorBrewer) # Color needed for rattle
+# 
+# myTree <- rpart(
+#   SUSPECT_ARRESTED_FLAG ~ ., # Build model where Survived dependent on rest features
+#   data=sqf_df  
+# )
+# 
+# ##### Visualize tree
+# prp(myTree)
+# 
+# fancyRpartPlot(myTree)
