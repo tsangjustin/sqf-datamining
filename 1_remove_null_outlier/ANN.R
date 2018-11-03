@@ -89,8 +89,8 @@ for (feature in c(features, dependent)) {
 }
 
 m_form <- as.formula(paste("~ ", paste(c(features, dependent), collapse = " + ")))
-m <- model.matrix( 
-  m_form, 
+m <- model.matrix(
+  m_form,
   data = sqf_df 
 )
 m <- m[, -c(1)]
@@ -115,7 +115,7 @@ f <- as.formula(
 net.sqrt <- neuralnet(
   formula = f,
   data=training,
-  hidden=c(len_m, len_m),
+  hidden=c(2 * len_m),
   stepmax = 1e6,
   threshold=0.01 # If weight does not change more than threshold consider stable
 )

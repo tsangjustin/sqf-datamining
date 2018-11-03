@@ -87,7 +87,7 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
-  }  else if (feature == "SUSPECT_RACE_DESCRIPTION") {
+  }  else if (feature == "SUSPECT_RACE_DESCRIPTION" || feature == "STOP_LOCATION_PRECINCT") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
@@ -112,7 +112,7 @@ myTree <- rpart(
 ##### Visualize tree
 prp(myTree)
 
-fancyRpartPlot(myTree)
+# fancyRpartPlot(myTree)
 
 test_arrest <- test$SUSPECT_ARRESTED_FLAG
 predict_arrest <- predict(myTree, test, type="class")

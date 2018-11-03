@@ -37,17 +37,17 @@ df <- read.csv(
 #               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
 #               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "SUSPECT_HEIGHT", "SUSPECT_WEIGHT",
 #               "STOP_LOCATION_PRECINCT")
-# features <- c("SUSPECTED_CRIME_DESCRIPTION",
-#               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
-#               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
-#               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
-#               "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
-#               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
-#               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION",
-#               "STOP_LOCATION_PRECINCT")
 features <- c("SUSPECTED_CRIME_DESCRIPTION",
-              "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
-              "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG")
+              "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
+              "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
+              "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
+              "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
+              "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
+              "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION",
+              "STOP_LOCATION_PRECINCT")
+# features <- c("SUSPECTED_CRIME_DESCRIPTION",
+#               "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
+#               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG")
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
@@ -74,6 +74,12 @@ for (feature in features) {
 
 sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
+##### Normalize #####
+mmnorm <- function(x,minx,maxx) {
+  z <- (x-minx)/(maxx-minx)
+  return(z)
+}
+
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
@@ -92,6 +98,10 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
   }  else if (feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
+  } else if (feature == "SUSPECT_REPORTED_AGE" || feature == "STOP_LOCATION_PRECINCT") {
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   }
 }
 

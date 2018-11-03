@@ -100,24 +100,27 @@ idx <- sample(x=df_rows, size=as.integer(0.20*df_rows))
 test <- sqf_df[idx, ]
 training <- sqf_df[-idx, ]
 
-##### C5.0 #####
-library("C50")
+##### Install packages #####
+# install.packages('e1071', dependencies = TRUE)
+library(class)
+library(e1071)
 
-myC50Tree <- C5.0(
+##### Main function #####
+class(sqf_df)
+prop.table
+
+# Get table of percentage for class and survived
+##### Naive bayes #####
+nBayes_arrest <- naiveBayes(
   SUSPECT_ARRESTED_FLAG ~ .,
   data=training
 )
-summary(myC50Tree)
-myC50Tree
-# plot(myC50Tree)
-
 ##### Predict tests ####
 # Use predict function to predict
-predict_arrest <- predict(myC50Tree, test, type="class")
+predict_arrest <- predict(nBayes_arrest, test, type="class")
 test_arrest <- test$SUSPECT_ARRESTED_FLAG
 table_k <- table(test_arrest, predict_arrest)
 accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table C5.0 D-Tree")
+print("Table Naive Bayes")
 print(table_k)
 print(paste("Accuracy: ", accuracy_k))
-
