@@ -121,8 +121,8 @@ for (feature in features) {
       k=k,
       kernel="rectangular"
     )
-    predict_arrest <- fitted(predict_k)
-    sqf_df[NA_sex, feature] <- as.character(predict_arrest)
+    predict_sex <- fitted(predict_k)
+    sqf_df[NA_sex, feature] <- as.character(predict_sex)
   }
 }
 
