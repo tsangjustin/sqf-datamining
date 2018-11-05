@@ -87,7 +87,9 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
-  }  else if (feature == "SUSPECT_RACE_DESCRIPTION" || feature == "STOP_LOCATION_PRECINCT") {
+  } else if (feature == "SUSPECT_RACE_DESCRIPTION" || feature == "STOP_LOCATION_PRECINCT" ||
+              feature == "CATEGORIZED_SUSPECT_HEIGHT" || feature == "CATEGORIZED_SUSPECT_WEIGHT" ||
+              feature == "CATEGORIZED_SUSPECT_REPORTED_AGE") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
