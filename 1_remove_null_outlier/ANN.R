@@ -91,7 +91,7 @@ for (feature in c(features, dependent)) {
 m_form <- as.formula(paste("~ ", paste(c(features, dependent), collapse = " + ")))
 m <- model.matrix(
   m_form,
-  data = sqf_df 
+  data = sqf_df
 )
 m <- m[, -c(1)]
 

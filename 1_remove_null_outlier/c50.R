@@ -109,7 +109,7 @@ myC50Tree <- C5.0(
 )
 summary(myC50Tree)
 myC50Tree
-# plot(myC50Tree)
+plot(myC50Tree)
 
 ##### Predict tests ####
 # Use predict function to predict
