@@ -11,7 +11,7 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/SQF-estimation.csv"
+file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/SQF-estimation-categorized.csv"
 
 df <- read.csv(
   file=file_path,
@@ -29,7 +29,7 @@ df <- read.csv(
 #               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
 #               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "SUSPECT_HEIGHT", "SUSPECT_WEIGHT",
 #               "STOP_LOCATION_PRECINCT")
-features <- c("STOP_FRISK_TIME_SECONDS", "SUSPECTED_CRIME_DESCRIPTION",
+features <- c("STOP_FRISK_TIME_MINUTES", "SUSPECTED_CRIME_DESCRIPTION",
               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
@@ -62,7 +62,7 @@ for (feature in features) {
        feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
        feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
     sqf_df[na_rows, feature] <- "N"
-  } else if (feature == "STOP_FRISK_TIME_SECONDS" || feature == "SUSPECT_REPORTED_AGE") {
+  } else if (feature == "STOP_FRISK_TIME_MINUTES" || feature == "SUSPECT_REPORTED_AGE") {
     sqf_df[, feature] <- as.numeric(sqf_df[, feature])
     mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     mode_feature <- mlv_feature$M # Get the mode value
@@ -76,15 +76,16 @@ for (feature in features) {
     
     for (feature in c(feature_col, predict_col)) {
       if (feature == "SUSPECT_HAIR_COLOR") {
-        na_rows <- is.na(predict_set[, feature])
-        predict_set[na_rows, feature] <- "XXX"
+        na_hair_rows <- is.na(predict_set[, feature])
+        predict_set[na_hair_rows, feature] <- "XXX"
         predict_set[, feature] <- factor(predict_set[, feature])
       } else if (feature == "SUSPECT_RACE_DESCRIPTION") {
-        na_rows <- is.na(predict_set[, feature])
+        na_race_rows <- is.na(predict_set[, feature])
+        predict_set[, feature] <- gsub('\\s+', '_', predict_set[, feature])
         predict_set[, feature] <- factor(predict_set[, feature])
-        train_race <- predict_set[!na_rows, ]
-        predict_race <- predict_set[na_rows, ]
-        k <- 3
+        train_race <- predict_set[!na_race_rows, ]
+        predict_race <- predict_set[na_race_rows, ]
+        k <- 2
         f <- as.formula(paste("SUSPECT_RACE_DESCRIPTION ~ ", paste(c("SUSPECT_WEIGHT", "SUSPECT_HEIGHT", "SUSPECT_HAIR_COLOR"), collapse = " + ")))
         predict_race <- kknn(
           formula=f,
@@ -94,16 +95,16 @@ for (feature in features) {
           kernel="rectangular"
         )
         predict_race <- fitted(predict_race)
-        predict_set[na_rows, feature] <- predict_race
+        predict_set[na_race_rows, feature] <- predict_race
         # print(paste("Predict race: ", predict_race))
-        sqf_df[na_rows, feature] <- predict_race
+        sqf_df[na_race_rows, feature] <- as.character(predict_race)
       } else if (feature == "SUSPECT_SEX") {
         predict_set[, feature] <- factor(predict_set[, feature])
       } else if (feature == "SUSPECT_WEIGHT" || feature == "SUSPECT_HEIGHT") {
-        na_rows <- is.na(predict_set[, feature])
+        na_feature_rows <- is.na(predict_set[, feature])
         mean_feature <- mean(predict_set[, feature], na.rm = TRUE)
         print(paste("Mean of ", feature, ": ", mean_feature))
-        predict_set[na_rows, feature] <- mean_feature
+        predict_set[na_feature_rows, feature] <- mean_feature
         min_feature <- min(predict_set[, feature])
         max_feature <- max(predict_set[, feature])
         predict_set[, feature] <- mmnorm(predict_set[, feature], min_feature, max_feature)
@@ -122,6 +123,7 @@ for (feature in features) {
       kernel="rectangular"
     )
     predict_sex <- fitted(predict_k)
+    predict_set[NA_sex, feature] <- predict_sex
     sqf_df[NA_sex, feature] <- as.character(predict_sex)
   }
 }
@@ -129,23 +131,55 @@ for (feature in features) {
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
-  if (feature == "FRISKED_FLAG" || feature == "SEARCHED_FLAG" || feature == "OTHER_CONTRABAND_FLAG" ||
-      feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
-      feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
-      feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
-      feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG" ||
-      feature == "SUSPECT_ARRESTED_FLAG") {
+  if (feature == "OTHER_PERSON_STOPPED_FLAG" ||
+      feature == "OFFICER_IN_UNIFORM_FLAG" ||
+      feature == "ID_CARD_IDENTIFIES_OFFICER_FLAG" ||
+      feature == "SHIELD_IDENTIFIES_OFFICER_FLAG" ||
+      feature == "VERBAL_IDENTIFIES_OFFICER_FLAG" ||
+      feature == "FRISKED_FLAG" ||
+      feature == "SEARCHED_FLAG" ||
+      feature == "OTHER_CONTRABAND_FLAG" ||
+      feature == "FIREARM_FLAG" ||
+      feature == "KNIFE_CUTTER_FLAG" ||
+      feature == "OTHER_WEAPON_FLAG" ||
+      feature == "WEAPON_FOUND_FLAG" ||
+      feature == "PHYSICAL_FORCE_CEW_FLAG" ||
+      feature == "PHYSICAL_FORCE_DRAW_POINT_FIREARM_FLAG" ||
+      feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" ||
+      feature == "PHYSICAL_FORCE_OC_SPRAY_USED_FLAG" ||
+      feature == "PHYSICAL_FORCE_OTHER_FLAG" ||
+      feature == "PHYSICAL_FORCE_RESTRAINT_USED_FLAG" ||
+      feature == "PHYSICAL_FORCE_VERBAL_INSTRUCTION_FLAG" ||
+      feature == "PHYSICAL_FORCE_WEAPON_IMPACT_FLAG" ||
+      feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
+      feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_CASING_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_DECRIPTION_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_LOOKOUT_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_OTHER_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_PROXIMITY_TO_SCENE_FLAG" ||
+      feature == "SEARCH_BASIS_ADMISSION_FLAG" ||
+      feature == "SEARCH_BASIS_CONSENT_FLAG" ||
+      feature == "SEARCH_BASIS_HARD_OBJECT_FLAG" ||
+      feature == "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG" ||
+      feature == "SEARCH_BASIS_OTHER_FLAG" ||
+      feature == "SEARCH_BASIS_OUTLINE_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("Y", "N"))
-  } else if (feature == "ISSUING_OFFICER_RANK" || feature == "SUPERVISING_OFFICER_RANK") {
-    sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
-  } else if (feature == "STOP_WAS_INITIATED" || feature == "SUSPECTED_CRIME_DESCRIPTION") {
+  } else if (feature == "ISSUING_OFFICER_RANK" ||
+     feature == "SUPERVISING_OFFICER_RANK") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = ranks)
+  } else if (feature == "STOP_WAS_INITIATED" ||
+     feature == "SUSPECTED_CRIME_DESCRIPTION" ||
+     feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
-  }  else if (feature == "SUSPECT_RACE_DESCRIPTION") {
-    sqf_df[, feature] <- factor(sqf_df[, feature])
-  } else if (feature == "STOP_FRISK_TIME_SECONDS" || feature == "SUSPECT_REPORTED_AGE" ||
-             feature == "STOP_LOCATION_PRECINCT") {
+  } else if (feature == "STOP_FRISK_TIME_SECONDS" ||
+     feature == "SUSPECT_REPORTED_AGE" ||
+     feature == "STOP_LOCATION_PRECINCT") {
     min_feature <- min(sqf_df[, feature])
     max_feature <- max(sqf_df[, feature])
     sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)

@@ -11,7 +11,7 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/1-Clean_outliers_and_null.csv"
+file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_Clean.csv"
 
 # df <- read.csv(
 #   file=file_path,
@@ -56,23 +56,23 @@ sqf_df <- df[c(features, dependent)]
 ##### CLEANUP DATA #####
 library(modeest)
 
-for (feature in features) {
-  na_rows <- is.na(sqf_df[, feature])
-  if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
-       feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
-       feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
-       feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
-    sqf_df[na_rows, feature] <- "N"
-  }
-  # } else if (feature == "SUSPECT_REPORTED_AGE") {
-  #   mode_age <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
-  #   sqf_df[na_rows, feature] <- mode_age$M
-  # } else if (feature == "SUSPECT_SEX") {
-  #   sqf_df[sqf_df$SUSPECT_SEX == "MALE" | sqf_df$SUSPECT_SEX == "FEMALE", "SUSPECT_SEX"]
-  # }
-}
+# for (feature in features) {
+#   na_rows <- is.na(sqf_df[, feature])
+#   if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
+#        feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
+#        feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
+#        feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
+#     sqf_df[na_rows, feature] <- "N"
+#   }
+#   # } else if (feature == "SUSPECT_REPORTED_AGE") {
+#   #   mode_age <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
+#   #   sqf_df[na_rows, feature] <- mode_age$M
+#   # } else if (feature == "SUSPECT_SEX") {
+#   #   sqf_df[sqf_df$SUSPECT_SEX == "MALE" | sqf_df$SUSPECT_SEX == "FEMALE", "SUSPECT_SEX"]
+#   # }
+# }
 
-sqf_df = na.omit(sqf_df) # Remove any rows with missing value
+sqf_df <- na.omit(sqf_df) # Remove any rows with missing value
 
 ##### Normalize #####
 mmnorm <- function(x,minx,maxx) {
@@ -90,15 +90,18 @@ for (feature in c(features, dependent)) {
       feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG" ||
       feature == "SUSPECT_ARRESTED_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("Y", "N"))
-  } else if (feature == "ISSUING_OFFICER_RANK" || feature == "SUPERVISING_OFFICER_RANK") {
+  } else if (feature == "ISSUING_OFFICER_RANK" ||
+     feature == "SUPERVISING_OFFICER_RANK") {
     sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
-  } else if (feature == "STOP_WAS_INITIATED" || feature == "SUSPECTED_CRIME_DESCRIPTION") {
+  } else if (feature == "STOP_WAS_INITIATED" ||
+     feature == "SUSPECTED_CRIME_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
   }  else if (feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
-  } else if (feature == "SUSPECT_REPORTED_AGE" || feature == "STOP_LOCATION_PRECINCT") {
+  } else if (feature == "SUSPECT_REPORTED_AGE" ||
+     feature == "STOP_LOCATION_PRECINCT") {
     min_feature <- min(sqf_df[, feature])
     max_feature <- max(sqf_df[, feature])
     sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)

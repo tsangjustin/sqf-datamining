@@ -102,6 +102,20 @@ categorize_weight <- function(weights) {
   }
 }
 
+categorize_stop_time <- function(time) {
+  if (time < 360) {
+    return("Nightwatcher")
+  } else if (time >= 360 && time < 720) {
+    return("Morning")
+  } else if (time >= 720 && time < 1080) {
+    return("Afternoon")
+  } else if (time >= 1080) {
+    return("Evening")
+  } else {
+    return ("Outlier")
+  }
+}
+
 ##### CLEANUP DATA #####
 library(modeest)
 library(kknn)
@@ -118,6 +132,7 @@ for (feature in features) {
     mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     mode_feature <- mlv_feature$M # Get the mode value
     sqf_df[na_rows, feature] <- mode_feature
+    sqf_df[, feature] <- sapply(df[, feature], categorize_stop_time)
   } else if (feature == "CATEGORIZED_SUSPECT_REPORTED_AGE") {
     na_rows <- is.na(sqf_df[, feature])
     orig_value <- df[, "SUSPECT_REPORTED_AGE"]
