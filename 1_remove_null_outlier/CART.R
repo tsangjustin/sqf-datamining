@@ -223,7 +223,7 @@ myTree <- rpart(
 ##### Visualize tree
 prp(myTree)
 
-# fancyRpartPlot(myTree)
+fancyRpartPlot(myTree)
 
 test_arrest <- test$SUSPECT_ARRESTED_FLAG
 predict_arrest <- predict(myTree, test, type="class")
