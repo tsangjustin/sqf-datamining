@@ -47,22 +47,10 @@ sqf_df <- df[c(features, dependent)]
 
 
 for (feature in features) {
-  na_rows <- is.na(sqf_df[, feature])
-  if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
-      feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
-      feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
-      feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
-    sqf_df[na_rows, feature] <- "N"
-  } else if (feature == "SUSPECTED_CRIME_DESCRIPTION" || feature == "SUSPECT_RACE_DESCRIPTION") {
+  if (feature == "SUSPECTED_CRIME_DESCRIPTION" || feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- gsub('\\s+', '_', sqf_df[, feature])
     sqf_df[, feature] <- gsub('\\/+', '_', sqf_df[, feature])
   }
-  # } else if (feature == "SUSPECT_REPORTED_AGE") {
-  #   mode_age <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
-  #   sqf_df[na_rows, feature] <- mode_age$M
-  # } else if (feature == "SUSPECT_SEX") {
-  #   sqf_df[sqf_df$SUSPECT_SEX == "MALE" | sqf_df$SUSPECT_SEX == "FEMALE", "SUSPECT_SEX"]
-  # }
 }
 
 sqf_df = na.omit(sqf_df) # Remove any rows with missing value

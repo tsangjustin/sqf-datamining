@@ -148,44 +148,47 @@ for (feature in c(features, dependent)) {
   } else if (feature == "STOP_DURATION_MINUTES") {
     
   } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
-     feature == "OTHER_PERSON_STOPPED_FLAG" ||
-     feature == "OFFICER_IN_UNIFORM_FLAG" ||
-     feature == "ID_CARD_IDENTIFIES_OFFICER_FLAG" ||
-     feature == "SHIELD_IDENTIFIES_OFFICER_FLAG" ||
-     feature == "VERBAL_IDENTIFIES_OFFICER_FLAG" ||
-     feature == "FRISKED_FLAG" ||
-     feature == "SEARCHED_FLAG" ||
-     feature == "OTHER_CONTRABAND_FLAG" ||
-     feature == "FIREARM_FLAG" ||
-     feature == "KNIFE_CUTTER_FLAG" ||
-     feature == "OTHER_WEAPON_FLAG" ||
-     feature == "WEAPON_FOUND_FLAG" ||
-     feature == "PHYSICAL_FORCE_CEW_FLAG" ||
-     feature == "PHYSICAL_FORCE_DRAW_POINT_FIREARM_FLAG" ||
-     feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" ||
-     feature == "PHYSICAL_FORCE_OC_SPRAY_USED_FLAG" ||
-     feature == "PHYSICAL_FORCE_OTHER_FLAG" ||
-     feature == "PHYSICAL_FORCE_RESTRAINT_USED_FLAG" ||
-     feature == "PHYSICAL_FORCE_VERBAL_INSTRUCTION_FLAG" ||
-     feature == "PHYSICAL_FORCE_WEAPON_IMPACT_FLAG" ||
-     feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
-     feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_CASING_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_DECRIPTION_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_LOOKOUT_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_OTHER_FLAG" ||
-     feature == "SUSPECTS_ACTIONS_PROXIMITY_TO_SCENE_FLAG" ||
-     feature == "SEARCH_BASIS_ADMISSION_FLAG" ||
-     feature == "SEARCH_BASIS_CONSENT_FLAG" ||
-     feature == "SEARCH_BASIS_HARD_OBJECT_FLAG" ||
-     feature == "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG" ||
-     feature == "SEARCH_BASIS_OTHER_FLAG" ||
-     feature == "SEARCH_BASIS_OUTLINE_FLAG" ||
-     feature == "SUSPECT_ARRESTED_FLAG") {
+      feature == "OTHER_PERSON_STOPPED_FLAG" ||
+      feature == "OFFICER_IN_UNIFORM_FLAG" ||
+      feature == "FRISKED_FLAG" ||
+      feature == "SEARCHED_FLAG" ||
+      feature == "OTHER_CONTRABAND_FLAG" ||
+      feature == "FIREARM_FLAG" ||
+      feature == "KNIFE_CUTTER_FLAG" ||
+      feature == "OTHER_WEAPON_FLAG" ||
+      feature == "WEAPON_FOUND_FLAG" ||
+      feature == "PHYSICAL_FORCE_CEW_FLAG" ||
+      feature == "PHYSICAL_FORCE_DRAW_POINT_FIREARM_FLAG" ||
+      feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" ||
+      feature == "PHYSICAL_FORCE_OC_SPRAY_USED_FLAG" ||
+      feature == "PHYSICAL_FORCE_OTHER_FLAG" ||
+      feature == "PHYSICAL_FORCE_RESTRAINT_USED_FLAG" ||
+      feature == "PHYSICAL_FORCE_VERBAL_INSTRUCTION_FLAG" ||
+      feature == "PHYSICAL_FORCE_WEAPON_IMPACT_FLAG" ||
+      feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
+      feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_CASING_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_DECRIPTION_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_LOOKOUT_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_OTHER_FLAG" ||
+      feature == "SUSPECTS_ACTIONS_PROXIMITY_TO_SCENE_FLAG" ||
+      feature == "SEARCH_BASIS_ADMISSION_FLAG" ||
+      feature == "SEARCH_BASIS_CONSENT_FLAG" ||
+      feature == "SEARCH_BASIS_HARD_OBJECT_FLAG" ||
+      feature == "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG" ||
+      feature == "SEARCH_BASIS_OTHER_FLAG" ||
+      feature == "SEARCH_BASIS_OUTLINE_FLAG" ||
+      feature == "SUSPECT_ARRESTED_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("Y", "N"))
+  } else if (feature == "ID_CARD_IDENTIFIES_OFFICER_FLAG") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("I", "N"))
+  } else if (feature == "SHIELD_IDENTIFIES_OFFICER_FLAG") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("S", "N"))
+  } else if (feature == "VERBAL_IDENTIFIES_OFFICER_FLAG") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("V", "N"))
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
   } else if (feature == "STOP_WAS_INITIATED" ||
