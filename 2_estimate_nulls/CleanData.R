@@ -95,6 +95,7 @@ for (feature in features) {
     sqf_df[, feature] <- as.numeric(sqf_df[, feature])
     mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     mode_feature <- mlv_feature$M # Get the mode value
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   } else if (feature == "STOP_WAS_INITIATED" ||
       feature == "JURISDICTION_DESCRIPTION" ||
@@ -105,6 +106,7 @@ for (feature in features) {
     # mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     # mode_feature <- mlv_feature$M # Get the mode value
     mode_feature <- get_mode(sqf_df[, feature], na.rm = TRUE)
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
       feature == "OTHER_PERSON_STOPPED_FLAG" ||
@@ -146,16 +148,17 @@ for (feature in features) {
     sqf_df[na_rows, feature] <- "N"
     sqf_df[, feature] <- as.factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_REPORTED_AGE") {
-    # sqf_df[, feature] <- as.numeric(sqf_df[, feature])
-    # mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
-    # mode_feature <- mlv_feature$M # Get the mode value
-    mode_feature <- get_mode(sqf_df[, feature], na.rm = TRUE)
+    sqf_df[, feature] <- as.numeric(sqf_df[, feature])
+    mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
+    mode_feature <- mlv_feature$M # Get the mode value
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- as.factor(sqf_df[, feature])
     # mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     # mode_feature <- mlv_feature$M # Get the mode value
     mode_feature <- get_mode(sqf_df[, feature], na.rm = TRUE)
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   } else if (feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- gsub('\\s+', '_', sqf_df[, feature])
@@ -164,13 +167,14 @@ for (feature in features) {
     # mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     # mode_feature <- mlv_feature$M # Get the mode value
     mode_feature <- get_mode(sqf_df[, feature], na.rm = TRUE)
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   } else if (feature == "SUSPECT_HEIGHT" ||
      feature == "SUSPECT_WEIGHT") {
     sqf_df[, feature] <- as.numeric(sqf_df[, feature])
-    # mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
-    # mode_feature <- mlv_feature$M # Get the mode value
-    mode_feature <- get_mode(sqf_df[, feature], na.rm = TRUE)
+    mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
+    mode_feature <- mlv_feature$M # Get the mode value
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   } else if (feature == "SUSPECT_BODY_BUILD_TYPE" ||
      feature == "SUSPECT_EYE_COLOR" ||
@@ -181,6 +185,7 @@ for (feature in features) {
     # mlv_feature <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
     # mode_feature <- mlv_feature$M # Get the mode value
     mode_feature <- get_mode(sqf_df[, feature], na.rm = TRUE)
+    print(paste("Mode of ", feature, ": ", mode_feature))
     sqf_df[na_rows, feature] <- mode_feature
   }
 }
