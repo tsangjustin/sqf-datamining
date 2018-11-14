@@ -4,11 +4,12 @@ df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "(", "#N/A", "<NA>"),
+  na.strings=c("(null)", "", "(", "#N/A", "<NA>", "ZZZ"),
   stringsAsFactors = FALSE
 )
 
 features <- c(
+  # TODO (matt): Add the stop_date column
   "STOP_FRISK_TIME_MINUTES",
   "MONTH2",
   "DAY2",
@@ -78,7 +79,11 @@ sqf_df <- df[, c(features, dependent)]
 
 for (feature in features) {
   na_rows <- is.na(sqf_df[, feature])
-  if (feature == "OTHER_PERSON_STOPPED_FLAG" ||
+  if (feature == "SUSPECTED_CRIME_DESCRIPTION" ||
+      feature == "SUSPECT_RACE_DESCRIPTION") {
+    sqf_df[, feature] <- gsub('\\s+', '_', sqf_df[, feature])
+  } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
+      feature == "OTHER_PERSON_STOPPED_FLAG" ||
       feature == "OFFICER_IN_UNIFORM_FLAG" ||
       feature == "ID_CARD_IDENTIFIES_OFFICER_FLAG" ||
       feature == "SHIELD_IDENTIFIES_OFFICER_FLAG" ||
@@ -115,6 +120,8 @@ for (feature in features) {
       feature == "SEARCH_BASIS_OTHER_FLAG" ||
       feature == "SEARCH_BASIS_OUTLINE_FLAG") {
     sqf_df[na_rows, feature] <- "N"
+  } else if (feature == "SUSPECT_HAIR_COLOR") {
+    sqf_df[na_rows, feature] <- "XXX"
   }
 }
 

@@ -194,10 +194,7 @@ for (feature in c(features, dependent)) {
   } else if (feature == "STOP_WAS_INITIATED" ||
      feature == "JURISDICTION_DESCRIPTION" ||
      feature == "SUSPECTED_CRIME_DESCRIPTION" ||
-     feature == "SUSPECT_REPORTED_AGE" ||
      feature == "SUSPECT_RACE_DESCRIPTION" ||
-     feature == "SUSPECT_HEIGHT" ||
-     feature == "SUSPECT_WEIGHT" ||
      feature == "SUSPECT_BODY_BUILD_TYPE" ||
      feature == "SUSPECT_EYE_COLOR" ||
      feature == "SUSPECT_HAIR_COLOR" ||

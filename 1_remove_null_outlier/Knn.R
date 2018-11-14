@@ -52,7 +52,8 @@ features <- c(
   "FIREARM_FLAG",
   "OTHER_CONTRABAND_FLAG",
   "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
-  "STOP_LOCATION_PRECINCT")
+  "STOP_LOCATION_PRECINCT"
+)
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
@@ -145,9 +146,6 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("S", "N"))
   } else if (feature == "VERBAL_IDENTIFIES_OFFICER_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("V", "N"))
-  } else if (feature == "ISSUING_OFFICER_RANK" ||
-     feature == "SUPERVISING_OFFICER_RANK") {
-    sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
   } else if (feature == "STOP_WAS_INITIATED" ||
      feature == "SUSPECTED_CRIME_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])

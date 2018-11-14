@@ -261,6 +261,6 @@ simp_predict_arrest <- as.factor(apply(predict_arrest, 1, simplify))
 
 table_k <- table(test=simp_test_arrest, predict=simp_predict_arrest)
 accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table C5.0 D-Tree")
+print("Table ANN")
 print(table_k)
 print(paste("Accuracy: ", accuracy_k))
