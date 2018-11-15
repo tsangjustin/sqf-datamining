@@ -13,22 +13,14 @@ rm(list=ls())
 ###### Load data #####
 file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_Clean.csv"
 
-# df <- read.csv(
-#   file=file_path,
-#   header=TRUE,
-#   sep=",",
-#   na.strings=c(""),
-#   stringsAsFactors = FALSE
-# )
-
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "("),
-  stringsAsFactors = FALSE
+  na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
 )
 
+##### Create DF for features and dependent variable #####
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
 #               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
 #               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
@@ -55,13 +47,15 @@ features <- c(
   "STOP_LOCATION_PRECINCT"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
-
-ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
 sqf_df <- df[c(features, dependent)]
+sqf_df <- na.omit(sqf_df) # Remove any rows with missing value
+
+##### Initiate the feature levels #####
+ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
+months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
 ##### CLEANUP DATA #####
-library(modeest)
-
 # for (feature in features) {
 #   na_rows <- is.na(sqf_df[, feature])
 #   if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
@@ -78,8 +72,6 @@ library(modeest)
 #   # }
 # }
 
-sqf_df <- na.omit(sqf_df) # Remove any rows with missing value
-
 ##### Normalize #####
 mmnorm <- function(x,minx,maxx) {
   z <- (x-minx)/(maxx-minx)
@@ -89,18 +81,24 @@ mmnorm <- function(x,minx,maxx) {
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
-  if (feature == "STOP_FRISK_TIME_MINUTES") {
+  if (feature == "STOP_FRISK_DOM" ||
+      feature == "STOP_FRISK_TIME_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
     min_feature <- min(sqf_df[, feature])
     max_feature <- max(sqf_df[, feature])
     sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
-  } else if (feature == "DAY2") {
-    sqf_df[, feature] <- factor(sqf_df[, feature], levels = days)
   } else if (feature == "MONTH2") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = months)
+  } else if (feature == "DAY2") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = days)
+  } else if (feature == "STOP_WAS_INITIATED") {
+    sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "ISSUING_OFFICER_RANK" ||
      feature == "SUPERVISING_OFFICER_RANK") {
-    sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
-  } else if (feature == "STOP_DURATION_MINUTES") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = ranks)
+  } else if (feature == "OBSERVED_DURATION_MINUTES" ||
+     feature == "STOP_DURATION_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
     min_feature <- min(sqf_df[, feature])
     max_feature <- max(sqf_df[, feature])
     sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
@@ -146,8 +144,7 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("S", "N"))
   } else if (feature == "VERBAL_IDENTIFIES_OFFICER_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("V", "N"))
-  } else if (feature == "STOP_WAS_INITIATED" ||
-     feature == "SUSPECTED_CRIME_DESCRIPTION") {
+  } else if (feature == "SUSPECTED_CRIME_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))

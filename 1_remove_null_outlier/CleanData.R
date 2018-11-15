@@ -9,7 +9,7 @@ df <- read.csv(
 )
 
 features <- c(
-  # TODO (matt): Add the stop_date column
+  "STOP_FRISK_DOM",
   "STOP_FRISK_TIME_MINUTES",
   "MONTH2",
   "DAY2",
@@ -79,9 +79,11 @@ sqf_df <- df[, c(features, dependent)]
 
 for (feature in features) {
   na_rows <- is.na(sqf_df[, feature])
-  if (feature == "SUSPECTED_CRIME_DESCRIPTION" ||
+  if (feature == "STOP_WAS_INITIATED" ||
+      feature == "SUSPECTED_CRIME_DESCRIPTION" ||
       feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- gsub('\\s+', '_', sqf_df[, feature])
+    sqf_df[, feature] <- gsub('\\/+', '_', sqf_df[, feature])
   } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
       feature == "OTHER_PERSON_STOPPED_FLAG" ||
       feature == "OFFICER_IN_UNIFORM_FLAG" ||

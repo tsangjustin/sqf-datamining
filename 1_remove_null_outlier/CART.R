@@ -11,22 +11,14 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_clean.csv"
-
-# df <- read.csv(
-#   file=file_path,
-#   header=TRUE,
-#   sep=",",
-#   na.strings=c(""),
-#   stringsAsFactors = FALSE
-# )
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "("),
-  stringsAsFactors = FALSE
+  na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
 )
 
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
@@ -46,6 +38,7 @@ df <- read.csv(
 #               "CATEGORIZED_SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "CATEGORIZED_SUSPECT_HEIGHT", "CATEGORIZED_SUSPECT_WEIGHT",
 #               "STOP_LOCATION_PRECINCT")
 features <- c(
+  "STOP_FRISK_DOM",
   "STOP_FRISK_TIME_MINUTES",
   "MONTH2",
   "DAY2",
@@ -105,16 +98,15 @@ features <- c(
   "STOP_LOCATION_PRECINCT"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
+sqf_df <- df[c(features, dependent)]
+sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
+##### Initiate the feature levels #####
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
 months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
-sqf_df <- df[c(features, dependent)]
-
 ##### CLEANUP DATA #####
-library(modeest)
-
 # for (feature in features) {
 #   na_rows <- is.na(sqf_df[, feature])
 #   if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
@@ -131,8 +123,6 @@ library(modeest)
 #   # }
 # }
 
-sqf_df = na.omit(sqf_df) # Remove any rows with missing value
-
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
@@ -144,10 +134,10 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = months)
   } else if (feature == "ISSUING_OFFICER_RANK" ||
       feature == "SUPERVISING_OFFICER_RANK") {
-    sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = ranks)
   } else if (feature == "STOP_DURATION_MINUTES") {
     
-} else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
+  } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
      feature == "OTHER_PERSON_STOPPED_FLAG" ||
      feature == "OFFICER_IN_UNIFORM_FLAG" ||
      feature == "FRISKED_FLAG" ||
@@ -197,8 +187,7 @@ for (feature in c(features, dependent)) {
       feature == "SUSPECT_RACE_DESCRIPTION" ||
       feature == "SUSPECT_BODY_BUILD_TYPE" ||
       feature == "SUSPECT_EYE_COLOR" ||
-      feature == "SUSPECT_HAIR_COLOR" ||
-      feature == "STOP_LOCATION_PRECINCT") {
+      feature == "SUSPECT_HAIR_COLOR") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
@@ -220,10 +209,13 @@ myTree <- rpart(
   data=sqf_df  
 )
 
-##### Visualize tree
+##### Plot Decision Tree #####
+par(mar=c(1,1,1,1))
+png(filename="./CART.png", width=1900, height=1900)
 prp(myTree)
-
+png(filename="./CART-Fancy.png", width=1900, height=1900)
 fancyRpartPlot(myTree)
+dev.off()
 
 test_arrest <- test$SUSPECT_ARRESTED_FLAG
 predict_arrest <- predict(myTree, test, type="class")
