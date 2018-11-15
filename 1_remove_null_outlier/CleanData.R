@@ -123,7 +123,7 @@ for (feature in features) {
       feature == "SEARCH_BASIS_OUTLINE_FLAG") {
     sqf_df[na_rows, feature] <- "N"
   } else if (feature == "SUSPECT_HAIR_COLOR") {
-    sqf_df[na_rows, feature] <- "XXX"
+    sqf_df[na_rows, feature] <- "XXX" # Uknown hair clear
   }
 }
 

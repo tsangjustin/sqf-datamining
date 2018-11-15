@@ -1,6 +1,8 @@
 # Work
 *.pages
 *.png
+Presentation/
+.Rhistory
 
 # MAC
 .DS_Store
