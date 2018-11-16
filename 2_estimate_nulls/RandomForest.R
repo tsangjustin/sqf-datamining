@@ -9,6 +9,7 @@
 #  Comments   : NULLs and outliers removed
 
 rm(list=ls())
+dev.off()
 #################################################
 ###### Load data #####
 setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
@@ -101,7 +102,7 @@ dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
 sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
-##### Levels for factors #####
+##### Initiate the feature levels #####
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
 months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -123,7 +124,6 @@ days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sat
 #   # }
 # }
 
-##### Cast to correct data type #####
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
@@ -188,7 +188,8 @@ for (feature in c(features, dependent)) {
              feature == "SUSPECT_RACE_DESCRIPTION" ||
              feature == "SUSPECT_BODY_BUILD_TYPE" ||
              feature == "SUSPECT_EYE_COLOR" ||
-             feature == "SUSPECT_HAIR_COLOR") {
+             feature == "SUSPECT_HAIR_COLOR" ||
+             feature == "SUSPECT_ARRESTED_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
@@ -199,29 +200,28 @@ idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
 test <- sqf_df[idx, ]
 training <- sqf_df[-idx, ]
 
-##### C5.0 #####
-library("C50")
+##### Random Forest #####
+# install.packages("randomForest")
+library(randomForest)
 
-myC50Tree <- C5.0(
-  SUSPECT_ARRESTED_FLAG ~ .,
-  data=training
+# Treat as binary outcome with factor(Class)
+fit <- randomForest(
+  factor(SUSPECT_ARRESTED_FLAG) ~ .,
+  data=training,
+  importance = TRUE,
+  ntree = 1000
 )
-summary(myC50Tree)
-myC50Tree
 
-##### Plot Decision Tree #####
-png(filename="./C5_0.png", width=5500, height=5500)
-par(mar=c(2,2,2,2))
-plot(myC50Tree)
+importance(fit)
+png(filename="./RandomForestImpotant.png", width=5500, height=5500)
+varImpPlot(fit) # Plot the importance of each feature
 dev.off()
+prediction <- predict(fit, test)
+table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
 
-##### Predict tests ####
-# Use predict function to predict
-predict_arrest <- predict(myC50Tree, test, type="class")
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table C5.0 D-Tree")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
+accuracy_fit <- sum(diag(table_fit)) / sum(table_fit)
+print("Table Random Forest")
+print(table_fit)
+print(paste("Accuracy: ", accuracy_fit))
 
+prediction <- predict(fit, test, type = "prob")

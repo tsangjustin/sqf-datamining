@@ -1,7 +1,7 @@
 ################## HEADER #######################
 #  Company    : Stevens 
 #  Project    : CS 513 Final Project
-#  Purpose    : Perform CART to predict arrest likelihood
+#  Purpose    : Perform SVM to predict arrest likelihood
 #  First Name  : Justin
 #  Last Name  : Tsang
 #  Id			    : 
@@ -21,6 +21,7 @@ df <- read.csv(
   na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
 )
 
+##### Create DF for features and dependent variable #####
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
 #               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
 #               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
@@ -29,79 +30,32 @@ df <- read.csv(
 #               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
 #               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "SUSPECT_HEIGHT", "SUSPECT_WEIGHT",
 #               "STOP_LOCATION_PRECINCT")
-# features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
+# features <- c("SUSPECTED_CRIME_DESCRIPTION",
 #               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
 #               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
 #               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
 #               "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
 #               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
-#               "CATEGORIZED_SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "CATEGORIZED_SUSPECT_HEIGHT", "CATEGORIZED_SUSPECT_WEIGHT",
+#               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION",
 #               "STOP_LOCATION_PRECINCT")
 features <- c(
-  "STOP_FRISK_DOM",
-  "STOP_FRISK_TIME_MINUTES",
-  "MONTH2",
-  "DAY2",
-  "STOP_WAS_INITIATED",
-  "ISSUING_OFFICER_RANK",
-  "SUPERVISING_OFFICER_RANK",
-  "JURISDICTION_DESCRIPTION",
-  "OBSERVED_DURATION_MINUTES",
   "SUSPECTED_CRIME_DESCRIPTION",
-  "STOP_DURATION_MINUTES",
-  "OFFICER_EXPLAINED_STOP_FLAG",
-  "OTHER_PERSON_STOPPED_FLAG",
-  "OFFICER_IN_UNIFORM_FLAG",
-  "ID_CARD_IDENTIFIES_OFFICER_FLAG",
-  "SHIELD_IDENTIFIES_OFFICER_FLAG",
-  "VERBAL_IDENTIFIES_OFFICER_FLAG",
-  "FRISKED_FLAG",
   "SEARCHED_FLAG",
-  "OTHER_CONTRABAND_FLAG",
-  "FIREARM_FLAG",
-  "KNIFE_CUTTER_FLAG",
-  "OTHER_WEAPON_FLAG",
+  "MONTH2",
   "WEAPON_FOUND_FLAG",
-  "PHYSICAL_FORCE_CEW_FLAG",
-  "PHYSICAL_FORCE_DRAW_POINT_FIREARM_FLAG",
-  "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
-  "PHYSICAL_FORCE_OC_SPRAY_USED_FLAG",
-  "PHYSICAL_FORCE_OTHER_FLAG",
-  "PHYSICAL_FORCE_RESTRAINT_USED_FLAG",
-  "PHYSICAL_FORCE_VERBAL_INSTRUCTION_FLAG",
-  "PHYSICAL_FORCE_WEAPON_IMPACT_FLAG",
-  "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG",
-  "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
-  "SUSPECTS_ACTIONS_CASING_FLAG",
-  "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG",
-  "SUSPECTS_ACTIONS_DECRIPTION_FLAG",
-  "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
-  "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
-  "SUSPECTS_ACTIONS_LOOKOUT_FLAG",
-  "SUSPECTS_ACTIONS_OTHER_FLAG",
-  "SUSPECTS_ACTIONS_PROXIMITY_TO_SCENE_FLAG",
-  "SEARCH_BASIS_ADMISSION_FLAG",
-  "SEARCH_BASIS_CONSENT_FLAG",
-  "SEARCH_BASIS_HARD_OBJECT_FLAG",
+  "FIREARM_FLAG",
+  "OTHER_CONTRABAND_FLAG",
   "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
-  "SEARCH_BASIS_OTHER_FLAG",
-  "SEARCH_BASIS_OUTLINE_FLAG",
-  # "DEMEANOR_OF_PERSON_STOPPED",
-  "SUSPECT_REPORTED_AGE",
-  "SUSPECT_SEX",
-  "SUSPECT_RACE_DESCRIPTION",
-  "SUSPECT_HEIGHT",
-  "SUSPECT_WEIGHT",
-  "SUSPECT_BODY_BUILD_TYPE",
-  "SUSPECT_EYE_COLOR",
-  "SUSPECT_HAIR_COLOR",
-  "STOP_LOCATION_PRECINCT"
+  "STOP_LOCATION_PRECINCT",
+  "JURISDICTION_DESCRIPTION",
+  "STOP_FRISK_TIME_MINUTES",
+  "SUSPECT_REPORTED_AGE"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
-sqf_df = na.omit(sqf_df) # Remove any rows with missing value
+sqf_df <- na.omit(sqf_df) # Remove any rows with missing value
 
-##### Levels for factors #####
+##### Initiate the feature levels #####
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
 months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -110,9 +64,9 @@ days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sat
 # for (feature in features) {
 #   na_rows <- is.na(sqf_df[, feature])
 #   if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
-#       feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
-#       feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
-#       feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
+#        feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
+#        feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
+#        feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
 #     sqf_df[na_rows, feature] <- "N"
 #   }
 #   # } else if (feature == "SUSPECT_REPORTED_AGE") {
@@ -123,21 +77,36 @@ days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sat
 #   # }
 # }
 
-##### Cast to correct data type #####
+##### Normalize #####
+mmnorm <- function(x,minx,maxx) {
+  z <- (x-minx)/(maxx-minx)
+  return(z)
+}
+
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
-  if (feature == "STOP_FRISK_TIME_MINUTES") {
-    
-  } else if (feature == "DAY2") {
-    sqf_df[, feature] <- factor(sqf_df[, feature], levels = days)
+  if (feature == "STOP_FRISK_DOM" ||
+      feature == "STOP_FRISK_TIME_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   } else if (feature == "MONTH2") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = months)
+  } else if (feature == "DAY2") {
+    sqf_df[, feature] <- factor(sqf_df[, feature], levels = days)
+  } else if (feature == "STOP_WAS_INITIATED") {
+    sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "ISSUING_OFFICER_RANK" ||
              feature == "SUPERVISING_OFFICER_RANK") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = ranks)
-  } else if (feature == "STOP_DURATION_MINUTES") {
-    
+  } else if (feature == "OBSERVED_DURATION_MINUTES" ||
+             feature == "STOP_DURATION_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
              feature == "OTHER_PERSON_STOPPED_FLAG" ||
              feature == "OFFICER_IN_UNIFORM_FLAG" ||
@@ -180,48 +149,54 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("S", "N"))
   } else if (feature == "VERBAL_IDENTIFIES_OFFICER_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("V", "N"))
+  } else if (feature == "SUSPECTED_CRIME_DESCRIPTION") {
+    sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_SEX") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = c("MALE", "FEMALE"))
-  } else if (feature == "STOP_WAS_INITIATED" ||
-             feature == "JURISDICTION_DESCRIPTION" ||
-             feature == "SUSPECTED_CRIME_DESCRIPTION" ||
-             feature == "SUSPECT_RACE_DESCRIPTION" ||
-             feature == "SUSPECT_BODY_BUILD_TYPE" ||
-             feature == "SUSPECT_EYE_COLOR" ||
-             feature == "SUSPECT_HAIR_COLOR") {
+  }  else if (feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
+  } else if (feature == "SUSPECT_REPORTED_AGE" ||
+             feature == "SUSPECT_HEIGHT" ||
+             feature == "SUSPECT_WEIGHT" ||
+             feature == "STOP_LOCATION_PRECINCT") {
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   }
 }
 
+##### Need to make dummy data #####
+m_form <- as.formula(paste(" ~ ", paste(c(features), collapse = " + ")))
+m <- model.matrix(
+  m_form,
+  data = sqf_df
+)
+m <- m[, -c(1)]
+m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG))
+library(plyr)
+m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
+m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
+
 ##### Split data ######
-df_rows <- nrow(sqf_df)
+df_rows <- nrow(m_2)
 idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
+test <- m_2[idx, ]
+training <- m_2[-idx, ]
 
-##### C5.0 #####
-library("C50")
+##### SVM #####
+library(e1071)
+?svm # Support Vector machine
 
-myC50Tree <- C5.0(
-  SUSPECT_ARRESTED_FLAG ~ .,
+# Treat as binary outcome with factor(Class)
+svm.model <- svm(
+  factor(SUSPECT_ARRESTED_FLAG) ~ .,
   data=training
 )
-summary(myC50Tree)
-myC50Tree
 
-##### Plot Decision Tree #####
-png(filename="./C5_0.png", width=5500, height=5500)
-par(mar=c(2,2,2,2))
-plot(myC50Tree)
-dev.off()
+prediction <- predict(svm.model, test)
+table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
 
-##### Predict tests ####
-# Use predict function to predict
-predict_arrest <- predict(myC50Tree, test, type="class")
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table C5.0 D-Tree")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
-
+accuracy_fit <- sum(diag(table_fit)) / sum(table_fit)
+print("Table SVM")
+print(table_fit)
+print(paste("Accuracy: ", accuracy_fit))

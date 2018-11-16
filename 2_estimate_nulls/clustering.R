@@ -18,8 +18,7 @@ df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "("),
-  stringsAsFactors = FALSE
+  na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
 )
 
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
@@ -111,13 +110,13 @@ features <- c(
   "SUSPECT_REPORTED_AGE"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
+sqf_df <- df[c(features, dependent)]
+sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
+##### Level for features #####
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
 months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
-
-sqf_df <- df[c(features, dependent)]
-sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
 ##### CLEANUP DATA #####
 # for (feature in features) {
@@ -136,11 +135,26 @@ sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 #   # }
 # }
 
+for (col in colnames(sqf_df)) {
+  NA_rows <- is.na(sqf_df[, col])
+  print(paste("NA Rows for col ", col))
+  print(sqf_df[NA_rows, 1])
+}
+
 ##### Cast to correct data type #####
+mmnorm <- function(x,minx,maxx) {
+  z <- (x-minx)/(maxx-minx)
+  return(z)
+}
+
 for (feature in c(features, dependent)) {
   # Should be factor
-  if (feature == "STOP_FRISK_TIME_MINUTES") {
-    
+  if (feature == "STOP_FRISK_DOM" ||
+      feature == "STOP_FRISK_TIME_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   } else if (feature == "DAY2") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = days)
   } else if (feature == "MONTH2") {
@@ -148,8 +162,12 @@ for (feature in c(features, dependent)) {
   } else if (feature == "ISSUING_OFFICER_RANK" ||
      feature == "SUPERVISING_OFFICER_RANK") {
     sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
-  } else if (feature == "STOP_DURATION_MINUTES") {
-    
+  } else if (feature == "OBSERVED_DURATION_MINUTES" ||
+             feature == "STOP_DURATION_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
      feature == "OTHER_PERSON_STOPPED_FLAG" ||
      feature == "OFFICER_IN_UNIFORM_FLAG" ||
@@ -205,39 +223,52 @@ for (feature in c(features, dependent)) {
   } else if (feature == "SUSPECT_REPORTED_AGE" ||
              feature == "SUSPECT_HEIGHT" ||
              feature == "SUSPECT_WEIGHT" ||
-             feature == "STOP_LOCATION_PRECINCT") {
-    
+            feature == "STOP_LOCATION_PRECINCT") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   }
 }
 
+##### Need to make dummy data #####
+m_form <- as.formula(paste(" ~ ", paste(c(features), collapse = " + ")))
+m <- model.matrix(
+  m_form,
+  data = sqf_df
+)
+m <- m[, -c(1)]
+m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG))
+library(plyr)
+m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
+m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.20*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
-
-##### Install packages #####
-# install.packages('e1071', dependencies = TRUE)
-library(class)
-library(e1071)
-
-##### Main function #####
-class(sqf_df)
-prop.table
+# df_dist <- dist(sqf_df[, features])
+df_dist <- dist(m)
+clust <- hclust(
+  df_dist,
+  method="average"
+)
 
 # Get table of percentage for class and survived
-##### Naive bayes #####
-nBayes_arrest <- naiveBayes(
-  SUSPECT_ARRESTED_FLAG ~ .,
-  data=training
-)
-##### Predict tests ####
-# Use predict function to predict
-predict_arrest <- predict(nBayes_arrest, test, type="class")
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-table_k <- table(test_arrest, predict_arrest)
+clust <- cutree(clust, 2) # Cut tree into 2 clusters
+table_k <- table(Hclust=clust, Actual=sqf_df[, dependent]) # Compare prediction to output
 accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table Naive Bayes")
+print("Table H Clustering")
 print(table_k)
 print(paste("Accuracy: ", accuracy_k))
+
+###### kmeans #####
+kmeans_df <- kmeans(
+  m,
+  centers = 2,
+  nstart = 10
+) # Reinit centroids 10 times for 2 clusters
+k_clust <- kmeans_df$cluster
+str(k_clust)
+table_k <- table(kmeans=k_clust, actual=sqf_df[, dependent]) # 1 and 2 are arbitary
+accuracy_k <- sum(diag(table_k)) / sum(table_k)
+print("Table K-Means Clustering")
+print(table_k)
+print(paste("Accuracy: ", accuracy_k))
+
