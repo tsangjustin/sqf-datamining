@@ -6,7 +6,7 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers removed
+#  Comments   : NULLs and outliers replaced with mode
 
 rm(list=ls())
 #################################################

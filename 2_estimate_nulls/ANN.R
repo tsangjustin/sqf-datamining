@@ -6,13 +6,13 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers removed
+#  Comments   : NULLs and outliers replaced with mode
 
 rm(list=ls())
 # dev.off()
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
