@@ -238,6 +238,10 @@ m <- model.matrix(
   data = sqf_df
 )
 m <- m[, -c(1)]
+m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG))
+library(plyr)
+m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
+m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
 # df_dist <- dist(sqf_df[, features])
 df_dist <- dist(m)
@@ -262,7 +266,7 @@ kmeans_df <- kmeans(
 ) # Reinit centroids 10 times for 2 clusters
 k_clust <- kmeans_df$cluster
 str(k_clust)
-table_k <- table(kmeans=k_clust, actual=sqf_df[, c(dependent)]) # 1 and 2 are arbitary
+table_k <- table(kmeans=k_clust, actual=sqf_df[, dependent]) # 1 and 2 are arbitary
 accuracy_k <- sum(diag(table_k)) / sum(table_k)
 print("Table K-Means Clustering")
 print(table_k)

@@ -165,19 +165,22 @@ for (feature in c(features, dependent)) {
 }
 
 ##### Need to make dummy data #####
-m_form <- as.formula(paste(" ~ ", paste(c(features, dependent), collapse = " + ")))
+m_form <- as.formula(paste(" ~ ", paste(c(features), collapse = " + ")))
 m <- model.matrix(
   m_form,
   data = sqf_df
 )
 m <- m[, -c(1)]
-
+m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG))
+library(plyr)
+m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
+m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
 ##### Split data ######
-df_rows <- nrow(sqf_df)
+df_rows <- nrow(m_2)
 idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
+test <- m_2[idx, ]
+training <- m_2[-idx, ]
 
 ##### kNN #####
 library(kknn)
