@@ -155,7 +155,9 @@ for (feature in c(features, dependent)) {
   }  else if (feature == "SUSPECT_RACE_DESCRIPTION") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   } else if (feature == "SUSPECT_REPORTED_AGE" ||
-     feature == "STOP_LOCATION_PRECINCT") {
+             feature == "SUSPECT_HEIGHT" ||
+             feature == "SUSPECT_WEIGHT" ||
+             feature == "STOP_LOCATION_PRECINCT") {
     min_feature <- min(sqf_df[, feature])
     max_feature <- max(sqf_df[, feature])
     sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)

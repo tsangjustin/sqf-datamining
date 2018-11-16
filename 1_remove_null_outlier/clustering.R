@@ -142,10 +142,19 @@ for (col in colnames(sqf_df)) {
 }
 
 ##### Cast to correct data type #####
+mmnorm <- function(x,minx,maxx) {
+  z <- (x-minx)/(maxx-minx)
+  return(z)
+}
+
 for (feature in c(features, dependent)) {
   # Should be factor
-  if (feature == "STOP_FRISK_TIME_MINUTES") {
-    
+  if (feature == "STOP_FRISK_DOM" ||
+      feature == "STOP_FRISK_TIME_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   } else if (feature == "DAY2") {
     sqf_df[, feature] <- factor(sqf_df[, feature], levels = days)
   } else if (feature == "MONTH2") {
@@ -153,8 +162,12 @@ for (feature in c(features, dependent)) {
   } else if (feature == "ISSUING_OFFICER_RANK" ||
      feature == "SUPERVISING_OFFICER_RANK") {
     sqf_df[, feature] <- factor(sqf_df[, feature], ranks)
-  } else if (feature == "STOP_DURATION_MINUTES") {
-    
+  } else if (feature == "OBSERVED_DURATION_MINUTES" ||
+             feature == "STOP_DURATION_MINUTES") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   } else if (feature == "OFFICER_EXPLAINED_STOP_FLAG" ||
      feature == "OTHER_PERSON_STOPPED_FLAG" ||
      feature == "OFFICER_IN_UNIFORM_FLAG" ||
@@ -202,15 +215,19 @@ for (feature in c(features, dependent)) {
   } else if (feature == "STOP_WAS_INITIATED" ||
      feature == "JURISDICTION_DESCRIPTION" ||
      feature == "SUSPECTED_CRIME_DESCRIPTION" ||
-     feature == "SUSPECT_REPORTED_AGE" ||
      feature == "SUSPECT_RACE_DESCRIPTION" ||
-     feature == "SUSPECT_HEIGHT" ||
-     feature == "SUSPECT_WEIGHT" ||
      feature == "SUSPECT_BODY_BUILD_TYPE" ||
      feature == "SUSPECT_EYE_COLOR" ||
-     feature == "SUSPECT_HAIR_COLOR" ||
-     feature == "STOP_LOCATION_PRECINCT") {
+     feature == "SUSPECT_HAIR_COLOR") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
+  } else if (feature == "SUSPECT_REPORTED_AGE" ||
+             feature == "SUSPECT_HEIGHT" ||
+             feature == "SUSPECT_WEIGHT" ||
+            feature == "STOP_LOCATION_PRECINCT") {
+    sqf_df[, feature] = as.numeric(sqf_df[, feature])
+    min_feature <- min(sqf_df[, feature])
+    max_feature <- max(sqf_df[, feature])
+    sqf_df[, feature] <- mmnorm(sqf_df[, feature], min_feature, max_feature)
   }
 }
 

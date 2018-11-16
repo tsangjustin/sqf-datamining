@@ -116,10 +116,9 @@ months <- c("January", "February", "March", "April", "May", "June", "July", "Aug
 days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
 sqf_df <- df[c(features, dependent)]
+sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
 ##### CLEANUP DATA #####
-library(modeest)
-
 # for (feature in features) {
 #   na_rows <- is.na(sqf_df[, feature])
 #   if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
@@ -135,8 +134,6 @@ library(modeest)
 #   #   sqf_df[sqf_df$SUSPECT_SEX == "MALE" | sqf_df$SUSPECT_SEX == "FEMALE", "SUSPECT_SEX"]
 #   # }
 # }
-
-sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
