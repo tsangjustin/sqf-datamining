@@ -9,6 +9,7 @@
 #  Comments   : NULLs and outliers removed
 
 rm(list=ls())
+# dev.off()
 #################################################
 ###### Load data #####
 setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
@@ -211,29 +212,34 @@ for (feature in c(features, dependent)) {
   }
 }
 
-m_form <- as.formula(paste("~ ", paste(c(features, dependent), collapse = " + ")))
+##### Need to make dummy data #####
+m_form <- as.formula(paste(" ~ ", paste(c(features, dependent), collapse = " + ")))
 m <- model.matrix(
   m_form,
   data = sqf_df
 )
-m <- m[, -c(1)]
+m_2 <- m[, -c(1)]
+# m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG))
+# library(plyr)
+# m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
+# m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
 ##### Split data ######
-df_rows <- nrow(m)
+df_rows <- nrow(m_2)
 idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- m[idx, ]
-training <- m[-idx, ]
+test <- m_2[idx, ]
+training <- m_2[-idx, ]
 
 ##### Since single input and output, one input layer node and one utput layer node #####
 # install.packages("neuralnet")
 library("neuralnet")
 
-len_m <- length(colnames(m))
+len_m <- length(colnames(m_2))
 f <- as.formula(
   paste(
-    paste(colnames(m)[c(len_m-1, len_m)], collapse = " + "),
+    paste(colnames(m_2)[c(len_m)], collapse = " + "),
     " ~",
-    paste(colnames(m)[-c(len_m-1, len_m)], collapse = " + ")
+    paste(colnames(m_2)[-c(len_m)], collapse = " + ")
   )
 )
 
@@ -247,15 +253,15 @@ net.sqrt <- neuralnet(
 
 plot(net.sqrt)
 
-simplify <- function(x) if (x[1] > x[2]) "Y" else "N"
+simplify <- function(x) if (x <= 0.5) "Y" else "N"
 
-test_arrest <- test[, c(len_m-1, len_m)]
-simp_test_arrest <- as.factor(apply(test_arrest, 1, simplify))
-predict_arrest <- compute(net.sqrt, test[, -c(len_m-1, len_m)])
+test_arrest <- test[, c(len_m)]
+simp_test_arrest <- as.factor(sapply(test_arrest, simplify))
+predict_arrest <- compute(net.sqrt, test[, -c(len_m)])
 predict_arrest <- predict_arrest$net.result
-simp_predict_arrest <- as.factor(apply(predict_arrest, 1, simplify))
-
+simp_predict_arrest <- as.factor(sapply(predict_arrest, simplify))
 table_k <- table(test=simp_test_arrest, predict=simp_predict_arrest)
+
 accuracy_k <- sum(diag(table_k)) / sum(table_k)
 print("Table ANN")
 print(table_k)
