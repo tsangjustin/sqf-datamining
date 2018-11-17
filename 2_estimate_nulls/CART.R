@@ -11,14 +11,15 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
+  na.strings=c("(null)", "", "(", "#N/A", "<NA>")
 )
 
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
@@ -201,8 +202,8 @@ training <- sqf_df[-idx, ]
 ##### CART #####
 library(rpart)
 library(rpart.plot) # Enhance tree plot
-library(rattle) # Fancy tree plot
-library(RColorBrewer) # Color needed for rattle
+#library(rattle) # Fancy tree plot
+#library(RColorBrewer) # Color needed for rattle
 
 myTree <- rpart(
   SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
@@ -218,6 +219,7 @@ fancyRpartPlot(myTree)
 dev.off()
 
 test_arrest <- test$SUSPECT_ARRESTED_FLAG
+
 predict_arrest <- predict(myTree, test, type="class")
 table_k <- table(test_arrest, predict_arrest)
 accuracy_k <- sum(diag(table_k)) / sum(table_k)

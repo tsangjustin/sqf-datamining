@@ -12,13 +12,15 @@ rm(list=ls())
 #################################################
 ###### Load data #####
 setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+#setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "("),
+  na.strings=c("(null)", "", "("),
   stringsAsFactors = FALSE
 )
 
