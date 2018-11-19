@@ -46,7 +46,7 @@ features <- c(
   "WEAPON_FOUND_FLAG",
   "FIREARM_FLAG",
   "OTHER_CONTRABAND_FLAG",
-  "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
@@ -178,26 +178,30 @@ library(plyr)
 m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
 m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
-##### Split data ######
-df_rows <- nrow(m_2)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- m_2[idx, ]
-training <- m_2[-idx, ]
-
 ##### SVM #####
 library(e1071)
 ?svm # Support Vector machine
-
-# Treat as binary outcome with factor(Class)
-svm.model <- svm(
-  factor(SUSPECT_ARRESTED_FLAG) ~ .,
-  data=training
-)
-
-prediction <- predict(svm.model, test)
-table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
-
-accuracy_fit <- sum(diag(table_fit)) / sum(table_fit)
-print("Table SVM")
-print(table_fit)
-print(paste("Accuracy: ", accuracy_fit))
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
+  
+  ##### Split data ######
+  df_rows <- nrow(m_2)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- m_2[idx, ]
+  training <- m_2[-idx, ]
+  
+  # Treat as binary outcome with factor(Class)
+  svm.model <- svm(
+    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    data=training
+  )
+  
+  prediction <- predict(svm.model, test)
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
+  
+  accuracies[i] <- sum(diag(table_fit)) / sum(table_fit)
+  print("Table SVM")
+  print(table_fit)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies

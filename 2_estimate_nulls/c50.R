@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
-#setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
 
 file_path <- "./SQF_clean.csv"
 
@@ -195,35 +195,39 @@ for (feature in c(features, dependent)) {
   }
 }
 
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
-
 ##### C5.0 #####
 library("C50")
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
 
-myC50Tree <- C5.0(
-  SUSPECT_ARRESTED_FLAG ~ .,
-  data=training
-)
-summary(myC50Tree)
-myC50Tree
+  ##### Split data ######
+  df_rows <- nrow(sqf_df)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- sqf_df[idx, ]
+  training <- sqf_df[-idx, ]
 
-##### Plot Decision Tree #####
-png(filename="./C5_0.png", width=5500, height=5500)
-par(mar=c(2,2,2,2))
-plot(myC50Tree)
-dev.off()
-
-##### Predict tests ####
-# Use predict function to predict
-predict_arrest <- predict(myC50Tree, test, type="class")
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table C5.0 D-Tree")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
-
+  
+  myC50Tree <- C5.0(
+    SUSPECT_ARRESTED_FLAG ~ .,
+    data=training
+  )
+  summary(myC50Tree)
+  myC50Tree
+  
+  ##### Plot Decision Tree #####
+  png(filename="./C5_0.png", width=5500, height=5500)
+  par(mar=c(2,2,2,2))
+  plot(myC50Tree)
+  dev.off()
+  
+  ##### Predict tests ####
+  # Use predict function to predict
+  predict_arrest <- predict(myC50Tree, test, type="class")
+  test_arrest <- test$SUSPECT_ARRESTED_FLAG
+  table_k <- table(test_arrest, predict_arrest)
+  accuracies[i] <- sum(diag(table_k)) / sum(table_k)
+  print("Table C5.0 D-Tree")
+  print(table_k)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies

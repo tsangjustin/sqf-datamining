@@ -85,7 +85,7 @@ features <- c(
   "SEARCH_BASIS_ADMISSION_FLAG",
   "SEARCH_BASIS_CONSENT_FLAG",
   "SEARCH_BASIS_HARD_OBJECT_FLAG",
-  "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "SEARCH_BASIS_OTHER_FLAG",
   "SEARCH_BASIS_OUTLINE_FLAG",
   # "DEMEANOR_OF_PERSON_STOPPED",
@@ -194,35 +194,48 @@ for (feature in c(features, dependent)) {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
-
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
-
 ##### Random Forest #####
 # install.packages("randomForest")
 library(randomForest)
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
 
-# Treat as binary outcome with factor(Class)
-fit <- randomForest(
-  factor(SUSPECT_ARRESTED_FLAG) ~ .,
-  data=training,
-  importance = TRUE,
-  ntree = 1000
-)
+  ##### Split data ######
+  df_rows <- nrow(sqf_df)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- sqf_df[idx, ]
+  training <- sqf_df[-idx, ]
 
-importance(fit)
-png(filename="./RandomForestImpotant.png", width=5500, height=5500)
-varImpPlot(fit) # Plot the importance of each feature
-dev.off()
-prediction <- predict(fit, test)
-table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
-
-accuracy_fit <- sum(diag(table_fit)) / sum(table_fit)
-print("Table Random Forest")
-print(table_fit)
-print(paste("Accuracy: ", accuracy_fit))
-
-prediction <- predict(fit, test, type = "prob")
+  # Treat as binary outcome with factor(Class)
+  fit <- randomForest(
+    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    data=training,
+    importance = TRUE,
+    ntree = 1000
+  )
+  
+  importance(fit)
+  png(filename="./RandomForestImpotant.png", width=5500, height=5500)
+  varImpPlot(fit) # Plot the importance of each feature
+  dev.off()
+  prediction <- predict(fit, test)
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
+  
+  accuracies[i] <- sum(diag(table_fit)) / sum(table_fit)
+  print("Table Random Forest")
+  print(table_fit)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies
+# predict_pct <- predict(fit, test, type = "prob")
+# accuracies <- array( dim=c(15,0) ) 
+# a<-1
+# for (i in seq(from = .15, to=.85, by=.05)){
+#   predictions<-(predict_pct[,"Y"]>i)
+#   table_i <- table(test$SUSPECT_ARRESTED_FLAG,predictions)
+#   accuracies[a] <- sum(diag(table_i)) / sum(table_i)
+#   #print(table_k)
+#   #print(paste("Accuracy: ", accuracies))
+#   a<-a+1
+# }
+# accuracies

@@ -9,7 +9,7 @@
 #  Comments   : NULLs and outliers removed
 
 rm(list=ls())
-dev.off()
+#dev.off()
 #################################################
 ###### Load data #####
 #setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
