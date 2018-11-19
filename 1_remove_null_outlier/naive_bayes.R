@@ -212,7 +212,7 @@ for (feature in c(features, dependent)) {
 
 ##### Split data ######
 df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.20*df_rows))
+idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
 test <- sqf_df[idx, ]
 training <- sqf_df[-idx, ]
 
