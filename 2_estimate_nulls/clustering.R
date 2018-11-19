@@ -11,14 +11,15 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
+  na.strings=c("(null)", "", "(", "#N/A", "<NA>")
 )
 
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
@@ -103,7 +104,7 @@ features <- c(
   "WEAPON_FOUND_FLAG",
   "FIREARM_FLAG",
   "OTHER_CONTRABAND_FLAG",
-  "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
@@ -271,4 +272,4 @@ accuracy_k <- sum(diag(table_k)) / sum(table_k)
 print("Table K-Means Clustering")
 print(table_k)
 print(paste("Accuracy: ", accuracy_k))
-
+1-accuracy_k

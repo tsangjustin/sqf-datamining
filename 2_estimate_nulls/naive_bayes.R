@@ -11,14 +11,16 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "("),
+  na.strings=c("(null)", "", "("),
   stringsAsFactors = FALSE
 )
 
@@ -104,7 +106,7 @@ features <- c(
   "WEAPON_FOUND_FLAG",
   "FIREARM_FLAG",
   "OTHER_CONTRABAND_FLAG",
-  "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
@@ -210,13 +212,6 @@ for (feature in c(features, dependent)) {
   }
 }
 
-
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.20*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
-
 ##### Install packages #####
 # install.packages('e1071', dependencies = TRUE)
 library(class)
@@ -226,18 +221,28 @@ library(e1071)
 class(sqf_df)
 prop.table
 
-# Get table of percentage for class and survived
-##### Naive bayes #####
-nBayes_arrest <- naiveBayes(
-  SUSPECT_ARRESTED_FLAG ~ .,
-  data=training
-)
-##### Predict tests ####
-# Use predict function to predict
-predict_arrest <- predict(nBayes_arrest, test, type="class")
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table Naive Bayes")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
+  ##### Split data ######
+  df_rows <- nrow(sqf_df)
+  idx <- sample(x=df_rows, size=as.integer(0.20*df_rows))
+  test <- sqf_df[idx, ]
+  training <- sqf_df[-idx, ]
+  
+  # Get table of percentage for class and survived
+  ##### Naive bayes #####
+  nBayes_arrest <- naiveBayes(
+    SUSPECT_ARRESTED_FLAG ~ .,
+    data=training
+  )
+  ##### Predict tests ####
+  # Use predict function to predict
+  predict_arrest <- predict(nBayes_arrest, test, type="class")
+  test_arrest <- test$SUSPECT_ARRESTED_FLAG
+  table_k <- table(test_arrest, predict_arrest)
+  accuracies[i] <- sum(diag(table_k)) / sum(table_k)
+  print("Table Naive Bayes")
+  print(table_k)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies

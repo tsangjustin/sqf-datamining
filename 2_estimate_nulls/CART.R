@@ -11,14 +11,15 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
+  na.strings=c("(null)", "", "(", "#N/A", "<NA>")
 )
 
 # features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
@@ -192,35 +193,50 @@ for (feature in c(features, dependent)) {
   }
 }
 
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
-
 ##### CART #####
 library(rpart)
 library(rpart.plot) # Enhance tree plot
-library(rattle) # Fancy tree plot
-library(RColorBrewer) # Color needed for rattle
+#library(rattle) # Fancy tree plot
+#library(RColorBrewer) # Color needed for rattle
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
 
-myTree <- rpart(
-  SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
-  data=sqf_df  
-)
+  ##### Split data ######
+  df_rows <- nrow(sqf_df)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- sqf_df[idx, ]
+  training <- sqf_df[-idx, ]
 
-##### Plot Decision Tree #####
-par(mar=c(1,1,1,1))
-png(filename="./CART.png", width=1900, height=1900)
-prp(myTree)
-png(filename="./CART-Fancy.png", width=1900, height=1900)
-fancyRpartPlot(myTree)
-dev.off()
+  myTree <- rpart(
+    SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
+    data=sqf_df  
+  )
+  
+  ##### Plot Decision Tree #####
+  par(mar=c(1,1,1,1))
+  png(filename="./CART.png", width=1900, height=1900)
+  prp(myTree)
+  #png(filename="./CART-Fancy.png", width=1900, height=1900)
+  #fancyRpartPlot(myTree)
+  #dev.off()
+  
+  test_arrest <- test$SUSPECT_ARRESTED_FLAG
+  
+  predict_arrest <- predict(myTree, test, type="class")
+  #predict_pct <- predict(myTree, test)
+  table_k <- table(test_arrest, predict_arrest)
+  accuracies[i] <- sum(diag(table_k)) / sum(table_k)
+  print("Table CART D-Tree")
+  print(table_k)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies
+# for (i in seq(from = .15, to=.85, by=.05)){
+#   predictions<-(predict_pct[,"Y"]>i)
+#   table_i <- table(test_arrest,predictions)
+#   accuracy_i <- sum(diag(table_i)) / sum(table_i)
+#   #print(table_k)
+#   print(paste("Accuracy: ", accuracy_i))
+# }
 
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-predict_arrest <- predict(myTree, test, type="class")
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table CART D-Tree")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
+
