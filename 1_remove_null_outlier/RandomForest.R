@@ -12,8 +12,8 @@ rm(list=ls())
 #dev.off()
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -85,7 +85,7 @@ features <- c(
   "SEARCH_BASIS_ADMISSION_FLAG",
   "SEARCH_BASIS_CONSENT_FLAG",
   "SEARCH_BASIS_HARD_OBJECT_FLAG",
-  "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "SEARCH_BASIS_OTHER_FLAG",
   "SEARCH_BASIS_OUTLINE_FLAG",
   # "DEMEANOR_OF_PERSON_STOPPED",
@@ -213,7 +213,7 @@ fit <- randomForest(
 )
 
 importance(fit)
-png(filename="./RandomForestImpotant.png", width=5500, height=5500)
+png(filename="./RandomForestImpotant.png", width=1400, height=1029)
 varImpPlot(fit) # Plot the importance of each feature
 dev.off()
 prediction <- predict(fit, test)
