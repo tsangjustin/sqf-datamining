@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
-# setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
 
 file_path <- "./SQF_clean.csv"
 
@@ -194,35 +194,43 @@ for (feature in c(features, dependent)) {
   }
 }
 
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
 
 ##### CART #####
 library(rpart)
 library(rpart.plot) # Enhance tree plot
-library(rattle) # Fancy tree plot
-library(RColorBrewer) # Color needed for rattle
+#library(rattle) # Fancy tree plot
+#library(RColorBrewer) # Color needed for rattle
 
-myTree <- rpart(
-  SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
-  data=sqf_df  
-)
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
+    
+  ##### Split data ######
+  df_rows <- nrow(sqf_df)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- sqf_df[idx, ]
+  training <- sqf_df[-idx, ]
+  
+  
+  myTree <- rpart(
+    SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
+    data=sqf_df  
+  )
+  
+  ##### Plot Decision Tree #####
+  par(mar=c(1,1,1,1))
+  png(filename="./CART.png", width=1900, height=1900)
+  prp(myTree)
+  png(filename="./CART-Fancy.png", width=1900, height=1900)
+  #fancyRpartPlot(myTree)
+  dev.off()
+  
+  test_arrest <- test$SUSPECT_ARRESTED_FLAG
+  predict_arrest <- predict(myTree, test, type="class")
+  table_k <- table(test_arrest, predict_arrest)
+  accuracies[i] <- sum(diag(table_k)) / sum(table_k)
+  print("Table CART D-Tree")
+  print(table_k)
+  print(paste("Accuracy: ", accuracies[i]))
+}
 
-##### Plot Decision Tree #####
-par(mar=c(1,1,1,1))
-png(filename="./CART.png", width=1900, height=1900)
-prp(myTree)
-png(filename="./CART-Fancy.png", width=1900, height=1900)
-fancyRpartPlot(myTree)
-dev.off()
-
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-predict_arrest <- predict(myTree, test, type="class")
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table CART D-Tree")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
+accuracies
