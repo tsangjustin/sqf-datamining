@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
 
 file_path <- "./SQF_clean.csv"
 
@@ -213,7 +213,7 @@ for (i in 1:10){
   
   myTree <- rpart(
     SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
-    data=sqf_df  
+    data=training  
   )
   
   ##### Plot Decision Tree #####
@@ -221,7 +221,7 @@ for (i in 1:10){
   png(filename="./CART.png", width=1900, height=1900)
   prp(myTree)
   png(filename="./CART-Fancy.png", width=1900, height=1900)
-  #fancyRpartPlot(myTree)
+  fancyRpartPlot(myTree)
   dev.off()
   
   test_arrest <- test$SUSPECT_ARRESTED_FLAG
