@@ -12,8 +12,8 @@ rm(list=ls())
 #dev.off()
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -209,7 +209,7 @@ for (i in 1:10){
 
   # Treat as binary outcome with factor(Class)
   fit <- randomForest(
-    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    SUSPECT_ARRESTED_FLAG ~ .,
     data=training,
     importance = TRUE,
     ntree = 1000
