@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
- setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+ # setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
 
 file_path <- "./SQF_clean.csv"
 
