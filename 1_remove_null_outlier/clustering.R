@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
 
 file_path <- "./SQF_clean.csv"
 
@@ -276,7 +276,7 @@ for (i in 1:10){
   
   # Get table of percentage for class and survived
   clust <- cutree(clust, 2) # Cut tree into 2 clusters
-  table_k <- table(Hclust=clust, Actual=sqf_df[idx, dependent]) # Compare prediction to output
+  table_k <- table(Hclust=clust, Actual=m_2[idx, dependent]) # Compare prediction to output
   accuracies_h[i] <- sum(diag(table_k)) / sum(table_k)
   print("Table H Clustering")
   print(table_k)
@@ -290,7 +290,7 @@ for (i in 1:10){
   ) # Reinit centroids 10 times for 2 clusters
   k_clust <- kmeans_df$cluster
   str(k_clust)
-  table_k <- table(kmeans=k_clust, actual=sqf_df[idx, dependent]) # 1 and 2 are arbitary
+  table_k <- table(kmeans=k_clust, actual=m_2[idx, dependent]) # 1 and 2 are arbitary
   accuracies_k[i] <- sum(diag(table_k)) / sum(table_k)
   print("Table K-Means Clustering")
   print(table_k)
