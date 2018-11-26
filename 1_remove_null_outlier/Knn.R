@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_Clean.csv"
-# file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
+#file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_Clean.csv"
+file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
 
 
 df <- read.csv(
@@ -180,29 +180,39 @@ library(plyr)
 m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
 m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
-##### Split data ######
-df_rows <- nrow(m_2)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- m_2[idx, ]
-training <- m_2[-idx, ]
+
 
 ##### kNN #####
 library(kknn)
-
-k_seq = c(1, 2, 5, 10, 15, 20)
-for (k in k_seq) {
-  predict_k <- kknn(
-    formula=SUSPECT_ARRESTED_FLAG ~ .,
-    train=training,
-    test=test,
-    k=k,
-    kernel="rectangular"
-  )
-  predict_arrest <- fitted(predict_k)
-  test_arrest <- test$SUSPECT_ARRESTED_FLAG
-  table_k <- table(test_arrest, predict_arrest)
-  accuracy_k <- sum(diag(table_k)) / sum(table_k)
-  print(paste("Table, k=", k, ":"))
-  print(table_k)
-  print(paste("Accuracy: ", accuracy_k))
+for (i in 1:10){
+  ##### Split data ######
+  df_rows <- nrow(m_2)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- m_2[idx, ]
+  training <- m_2[-idx, ]
+  
+  ##### kNN #####
+  
+  k_seq = c(1, 2, 5, 10, 15, 20)
+  
+  accuracies<-array( dim=c(6,0) )
+  a<-1
+  for (k in k_seq) {
+    predict_k <- kknn(
+      formula=SUSPECT_ARRESTED_FLAG ~ .,
+      train=training,
+      test=test,
+      k=k,
+      kernel="rectangular"
+    )
+    predict_arrest <- fitted(predict_k)
+    test_arrest <- test$SUSPECT_ARRESTED_FLAG
+    table_k <- table(test_arrest, predict_arrest)
+    accuracies[a]<- sum(diag(table_k)) / sum(table_k)
+    # print(paste("Table, k=", k, ":"))
+    #print(table_k)
+    #print(paste("Accuracy: ", accuracies[i]))
+    a<-a+1
+  }
+  print(accuracies)
 }

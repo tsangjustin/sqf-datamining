@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_clean.csv"
-# file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
+#file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_clean.csv"
+file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
 
 
 df <- read.csv(
@@ -227,33 +227,39 @@ for (feature in c(features, dependent)) {
 }
 
 
-##### Split data ######
-df_rows <- nrow(sqf_df)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- sqf_df[idx, ]
-training <- sqf_df[-idx, ]
 
 ##### Install packages #####
 # install.packages('e1071', dependencies = TRUE)
 library(class)
 library(e1071)
-
-##### Main function #####
-class(sqf_df)
-prop.table
-
-# Get table of percentage for class and survived
-##### Naive bayes #####
-nBayes_arrest <- naiveBayes(
-  SUSPECT_ARRESTED_FLAG ~ .,
-  data=training
-)
-##### Predict tests ####
-# Use predict function to predict
-predict_arrest <- predict(nBayes_arrest, test, type="class")
-test_arrest <- test$SUSPECT_ARRESTED_FLAG
-table_k <- table(test_arrest, predict_arrest)
-accuracy_k <- sum(diag(table_k)) / sum(table_k)
-print("Table Naive Bayes")
-print(table_k)
-print(paste("Accuracy: ", accuracy_k))
+  
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
+  ##### Split data ######
+  df_rows <- nrow(sqf_df)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- sqf_df[idx, ]
+  training <- sqf_df[-idx, ]
+  
+  
+  ##### Main function #####
+  class(sqf_df)
+  prop.table
+  
+  # Get table of percentage for class and survived
+  ##### Naive bayes #####
+  nBayes_arrest <- naiveBayes(
+    SUSPECT_ARRESTED_FLAG ~ .,
+    data=training
+  )
+  ##### Predict tests ####
+  # Use predict function to predict
+  predict_arrest <- predict(nBayes_arrest, test, type="class")
+  test_arrest <- test$SUSPECT_ARRESTED_FLAG
+  table_k <- table(test_arrest, predict_arrest)
+  accuracies[i] <- sum(diag(table_k)) / sum(table_k)
+  print("Table Naive Bayes")
+  print(table_k)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies

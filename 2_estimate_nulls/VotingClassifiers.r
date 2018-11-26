@@ -6,14 +6,14 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers removed
+#  Comments   : NULLs and outliers replaced with mode
 
 rm(list=ls())
+#dev.off()
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
- setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
-
+setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -22,23 +22,6 @@ df <- read.csv(
   sep=",",
   na.strings=c("(null)", "", "(", "#N/A", "<NA>")
 )
-
-# features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
-#               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
-#               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
-#               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
-#               "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
-#               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
-#               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "SUSPECT_HEIGHT", "SUSPECT_WEIGHT",
-#               "STOP_LOCATION_PRECINCT")
-# features <- c("STOP_WAS_INITIATED", "ISSUING_OFFICER_RANK", "SUPERVISING_OFFICER_RANK", "SUSPECTED_CRIME_DESCRIPTION",
-#               "FRISKED_FLAG", "SEARCHED_FLAG", "OTHER_CONTRABAND_FLAG", "FIREARM_FLAG", "KNIFE_CUTTER_FLAG",
-#               "OTHER_WEAPON_FLAG", "WEAPON_FOUND_FLAG", "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG",
-#               "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG", "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG",
-#               "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG", "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG",
-#               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
-#               "CATEGORIZED_SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION", "CATEGORIZED_SUSPECT_HEIGHT", "CATEGORIZED_SUSPECT_WEIGHT",
-#               "STOP_LOCATION_PRECINCT")
 features <- c(
   "STOP_FRISK_DOM",
   "STOP_FRISK_TIME_MINUTES",
@@ -85,7 +68,7 @@ features <- c(
   "SEARCH_BASIS_ADMISSION_FLAG",
   "SEARCH_BASIS_CONSENT_FLAG",
   "SEARCH_BASIS_HARD_OBJECT_FLAG",
-  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "SEARCH_BASIS_OTHER_FLAG",
   "SEARCH_BASIS_OUTLINE_FLAG",
   # "DEMEANOR_OF_PERSON_STOPPED",
@@ -103,29 +86,11 @@ dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
 sqf_df = na.omit(sqf_df) # Remove any rows with missing value
 
-##### Levels for factors #####
+##### Initiate the feature levels #####
 ranks <- c("POF", "POM", "DT1", "DT2", "DT3", "DTS", "SSA", "SGT", "SDS", "LSA", "LT", "CPT", "DI", "LCD")
 months <- c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
 days <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
-##### CLEANUP DATA #####
-# for (feature in features) {
-#   na_rows <- is.na(sqf_df[, feature])
-#   if (feature == "FIREARM_FLAG" || feature == "KNIFE_CUTTER_FLAG" || feature == "OTHER_WEAPON_FLAG" || feature == "WEAPON_FOUND_FLAG" ||
-#       feature == "PHYSICAL_FORCE_HANDCUFF_SUSPECT_FLAG" || feature == "BACKROUND_CIRCUMSTANCES_VIOLENT_CRIME_FLAG" ||
-#       feature == "BACKROUND_CIRCUMSTANCES_SUSPECT_KNOWN_TO_CARRY_WEAPON_FLAG" || feature == "SUSPECTS_ACTIONS_CONCEALED_POSSESSION_WEAPON_FLAG" ||
-#       feature == "SUSPECTS_ACTIONS_DRUG_TRANSACTIONS_FLAG" || feature == "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG") {
-#     sqf_df[na_rows, feature] <- "N"
-#   }
-#   # } else if (feature == "SUSPECT_REPORTED_AGE") {
-#   #   mode_age <- mlv(sqf_df[, feature], method="mfv", na.rm=TRUE) # most frequent value
-#   #   sqf_df[na_rows, feature] <- mode_age$M
-#   # } else if (feature == "SUSPECT_SEX") {
-#   #   sqf_df[sqf_df$SUSPECT_SEX == "MALE" | sqf_df$SUSPECT_SEX == "FEMALE", "SUSPECT_SEX"]
-#   # }
-# }
-
-##### Cast to correct data type #####
 ##### Cast to correct data type #####
 for (feature in c(features, dependent)) {
   # Should be factor
@@ -190,45 +155,142 @@ for (feature in c(features, dependent)) {
              feature == "SUSPECT_RACE_DESCRIPTION" ||
              feature == "SUSPECT_BODY_BUILD_TYPE" ||
              feature == "SUSPECT_EYE_COLOR" ||
-             feature == "SUSPECT_HAIR_COLOR") {
+             feature == "SUSPECT_HAIR_COLOR" ||
+             feature == "SUSPECT_ARRESTED_FLAG") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
+features2 <- c(
+  "SUSPECTED_CRIME_DESCRIPTION",
+  "SEARCHED_FLAG",
+  "MONTH2",
+  "WEAPON_FOUND_FLAG",
+  "FIREARM_FLAG",
+  "OTHER_CONTRABAND_FLAG",
+  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  "STOP_LOCATION_PRECINCT",
+  "JURISDICTION_DESCRIPTION",
+  "STOP_FRISK_TIME_MINUTES",
+  "SUSPECT_REPORTED_AGE"
+)
+sqf_df_nb <- sqf_df[c(features2, dependent)]
+m_form <- as.formula(paste(" ~ ", paste(c(features2), collapse = " + ")))
+m <- model.matrix(
+  m_form,
+  data = sqf_df_nb
+)
+m <- m[, -c(1)]
+m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df_nb$SUSPECT_ARRESTED_FLAG))
+library(plyr)
+m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
+m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
 
-
-##### C5.0 #####
+library(randomForest)
 library("C50")
-accuracies<-array( dim=c(10,0) )
-for (i in 1:10){
-    
+library(rpart)
+library(e1071)
+library(class)
+
+#for (i in 1:10){
+  
   ##### Split data ######
   df_rows <- nrow(sqf_df)
   idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
   test <- sqf_df[idx, ]
   training <- sqf_df[-idx, ]
+  test_nb<-sqf_df_nb[idx, ]
+  training_nb <- sqf_df_nb[-idx, ]
+  test_svm<-m_2[idx, ]
+  training_svm <- m_2[-idx, ]
   
+  test_arrest <- test$SUSPECT_ARRESTED_FLAG
+  
+  ####RF####
+  fit <- randomForest(
+    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    data=training,
+    importance = TRUE,
+    ntree = 1000
+  )
+  predict_rf <- predict(fit, test)
+  predict_rf_prob <- predict(fit, test,type="prob")
+  table_fit <- table(actual=test_arrest, predict=predict_rf)
+  accuracy_rf <- sum(diag(table_fit)) / sum(table_fit)
+
+  ####C5.0####
   myC50Tree <- C5.0(
     SUSPECT_ARRESTED_FLAG ~ .,
     data=training
   )
-  summary(myC50Tree)
-  myC50Tree
+  predict_C50 <- predict(myC50Tree, test, type="class")
+  predict_C50_prob <- predict(myC50Tree, test, type="prob")
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=predict_C50)
+  accuracy_C50 <- sum(diag(table_fit)) / sum(table_fit)
+
+  ###CART####
+  myTree <- rpart(
+    SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
+    data=sqf_df  
+  )
+  predict_cart <- predict(myTree, test, type="class")
+  predict_cart_prob <- predict(myTree, test,type="prob")
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=predict_cart)
+  accuracy_cart <- sum(diag(table_fit)) / sum(table_fit)
+
+  ####NB####
+  nBayes_arrest <- naiveBayes(
+    SUSPECT_ARRESTED_FLAG ~ .,
+    data=training_nb
+  )
+  predict_nb <- predict(nBayes_arrest, test_nb, type="class")
+  predict_nb_prob <- predict(nBayes_arrest, test_nb, type="raw")
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=predict_nb)
+  accuracy_nb <- sum(diag(table_fit)) / sum(table_fit)
+
+  ####SVM####
+  svm.model <- svm(
+    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    data=training_svm,
+    probability=TRUE
+  )
+  predict_svm <- predict(svm.model, test_svm)
+  predict_svm_prob <- attr(predict(svm.model, test_svm,probability=TRUE),"probabilities")
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=predict_svm)
+  accuracy_svm <- sum(diag(table_fit)) / sum(table_fit)
+
+  p_rf<-as.numeric(as.character(revalue(predict_rf,c("Y"="1","N"="0"))))
+  p_C50<-as.numeric(as.character(revalue(predict_C50,c("Y"="1","N"="0"))))
+  p_cart<-as.numeric(as.character(revalue(predict_cart,c("Y"="1","N"="0"))))
+  p_nb<-as.numeric(as.character(revalue(predict_nb,c("Y"="1","N"="0"))))
+  p_svm<-as.numeric(as.character(revalue(predict_svm,c("Y"="1","N"="0"))))
   
-  ##### Plot Decision Tree #####
-  png(filename="./C5_0.png", width=5500, height=5500)
-  par(mar=c(2,2,2,2))
-  plot(myC50Tree)
-  dev.off()
+  p_singlevote<-(p_rf+p_C50+p_cart+p_nb+p_svm)/5
+  p_vote<-revalue(factor(p_singlevote<.5),c("FALSE"="Y","TRUE"="N"))
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=p_vote)
+  accuracy_sv <- sum(diag(table_fit)) / sum(table_fit)
+
+  p_avg<-(predict_rf_prob[,"Y"]+predict_C50_prob[,"Y"]+predict_cart_prob[,"Y"]+predict_nb_prob[,"Y"]+predict_svm_prob[,"Y"])/5
+  p_avgvote<-revalue(factor(p_avg<.5),c("FALSE"="Y","TRUE"="N"))
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=p_avgvote)
+  accuracy_av <- sum(diag(table_fit)) / sum(table_fit)
   
-  ##### Predict tests ####
-  # Use predict function to predict
-  predict_arrest <- predict(myC50Tree, test, type="class")
-  test_arrest <- test$SUSPECT_ARRESTED_FLAG
-  table_k <- table(test_arrest, predict_arrest)
-  accuracies[i] <- sum(diag(table_k)) / sum(table_k)
-  print("Table C5.0 D-Tree")
-  print(table_k)
-  print(paste("Accuracy: ", accuracies[i]))
-}
-accuracies
+  p_weighted<-(.3*predict_rf_prob[,"Y"]+.25*predict_C50_prob[,"Y"]+.25*predict_cart_prob[,"Y"]+.1*predict_nb_prob[,"Y"]+.1*predict_svm_prob[,"Y"])
+  p_wavote<-revalue(factor(p_weighted<.5),c("FALSE"="Y","TRUE"="N"))
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=p_wavote)
+  accuracy_wav <- sum(diag(table_fit)) / sum(table_fit)
+  
+  
+  
+  print(paste("RF Accuracy: ", accuracy_rf))
+  print(paste("C5.0 Accuracy: ", accuracy_C50))
+  print(paste("CART Accuracy: ", accuracy_cart))
+  print(paste("NB Accuracy: ", accuracy_nb))
+  print(paste("SVMAccuracy: ", accuracy_svm))
+  print(paste("Single Vote Accuracy: ", accuracy_sv))
+  print(paste("Average Vote Accuracy: ", accuracy_av))
+  print(paste("Weighted Average Vote Accuracy: ", accuracy_wav))
+
+  
+  
+  

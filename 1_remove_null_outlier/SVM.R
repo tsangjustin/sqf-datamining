@@ -11,8 +11,8 @@
 rm(list=ls())
 #################################################
 ###### Load data #####
-file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_Clean.csv"
-# file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
+#file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_Clean.csv"
+file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
 
 df <- read.csv(
   file=file_path,
@@ -192,26 +192,32 @@ library(plyr)
 m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
 m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
 
-##### Split data ######
-df_rows <- nrow(m_2)
-idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
-test <- m_2[idx, ]
-training <- m_2[-idx, ]
 
 ##### SVM #####
 library(e1071)
-?svm # Support Vector machine
-
-# Treat as binary outcome with factor(Class)
-svm.model <- svm(
-  factor(SUSPECT_ARRESTED_FLAG) ~ .,
-  data=training
-)
-
-prediction <- predict(svm.model, test)
-table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
-
-accuracy_fit <- sum(diag(table_fit)) / sum(table_fit)
-print("Table SVM")
-print(table_fit)
-print(paste("Accuracy: ", accuracy_fit))
+#?svm # Support Vector machine
+accuracies<-array( dim=c(10,0) )
+for (i in 1:10){
+  
+  ##### Split data ######
+  df_rows <- nrow(m_2)
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
+  test <- m_2[idx, ]
+  training <- m_2[-idx, ]
+  
+  
+  # Treat as binary outcome with factor(Class)
+  svm.model <- svm(
+    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    data=training
+  )
+  
+  prediction <- predict(svm.model, test)
+  table_fit <- table(actual=test$SUSPECT_ARRESTED_FLAG, predict=prediction)
+  
+  accuracies[i] <- sum(diag(table_fit)) / sum(table_fit)
+  print("Table SVM")
+  print(table_fit)
+  print(paste("Accuracy: ", accuracies[i]))
+}
+accuracies
