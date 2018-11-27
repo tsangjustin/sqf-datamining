@@ -6,13 +6,14 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -97,18 +98,33 @@ df <- read.csv(
 #   "SUSPECT_HAIR_COLOR",
 #   "STOP_LOCATION_PRECINCT"
 # )
+# features <- c(
+#   "SUSPECTED_CRIME_DESCRIPTION",
+#   "SEARCHED_FLAG",
+#   "MONTH2",
+#   "WEAPON_FOUND_FLAG",
+#   "FIREARM_FLAG",
+#   "OTHER_CONTRABAND_FLAG",
+#   # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+#   "STOP_LOCATION_PRECINCT",
+#   "JURISDICTION_DESCRIPTION",
+#   "STOP_FRISK_TIME_MINUTES",
+#   "SUSPECT_REPORTED_AGE"
+# )
 features <- c(
-  "SUSPECTED_CRIME_DESCRIPTION",
   "SEARCHED_FLAG",
+  "SUSPECTED_CRIME_DESCRIPTION",
+  "OTHER_CONTRABAND_FLAG",
   "MONTH2",
   "WEAPON_FOUND_FLAG",
-  "FIREARM_FLAG",
-  "OTHER_CONTRABAND_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  "STOP_DURATION_MINUTES",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
-  "SUSPECT_REPORTED_AGE"
+  "SEARCH_BASIS_CONSENT_FLAG",
+  "SUSPECT_REPORTED_AGE",
+  "FIREARM_FLAG"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
@@ -243,6 +259,7 @@ m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG
 library(plyr)
 m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
 m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
+
 accuracies_h<-array( dim=c(10,0) )
 accuracies_k<-array( dim=c(10,0) )
 for (i in 1:10){
@@ -259,7 +276,7 @@ for (i in 1:10){
   
   # Get table of percentage for class and survived
   clust <- cutree(clust, 2) # Cut tree into 2 clusters
-  table_k <- table(Hclust=clust, Actual=sqf_df[idx, dependent]) # Compare prediction to output
+  table_k <- table(Hclust=clust, Actual=m_2[idx, dependent]) # Compare prediction to output
   accuracies_h[i] <- sum(diag(table_k)) / sum(table_k)
   print("Table H Clustering")
   print(table_k)
@@ -273,7 +290,7 @@ for (i in 1:10){
   ) # Reinit centroids 10 times for 2 clusters
   k_clust <- kmeans_df$cluster
   str(k_clust)
-  table_k <- table(kmeans=k_clust, actual=sqf_df[idx, dependent]) # 1 and 2 are arbitary
+  table_k <- table(kmeans=k_clust, actual=m_2[idx, dependent]) # 1 and 2 are arbitary
   accuracies_k[i] <- sum(diag(table_k)) / sum(table_k)
   print("Table K-Means Clustering")
   print(table_k)

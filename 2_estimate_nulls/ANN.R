@@ -6,7 +6,7 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 # dev.off()
@@ -98,18 +98,33 @@ df <- read.csv(
 #   "SUSPECT_HAIR_COLOR",
 #   "STOP_LOCATION_PRECINCT"
 # )
+# features <- c(
+#   "SUSPECTED_CRIME_DESCRIPTION",
+#   "SEARCHED_FLAG",
+#   "MONTH2",
+#   "WEAPON_FOUND_FLAG",
+#   "FIREARM_FLAG",
+#   "OTHER_CONTRABAND_FLAG",
+#   # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+#   "STOP_LOCATION_PRECINCT",
+#   "JURISDICTION_DESCRIPTION",
+#   "STOP_FRISK_TIME_MINUTES",
+#   "SUSPECT_REPORTED_AGE"
+# )
 features <- c(
-  "SUSPECTED_CRIME_DESCRIPTION",
   "SEARCHED_FLAG",
+  "SUSPECTED_CRIME_DESCRIPTION",
+  "OTHER_CONTRABAND_FLAG",
   "MONTH2",
   "WEAPON_FOUND_FLAG",
-  "FIREARM_FLAG",
-  "OTHER_CONTRABAND_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  "STOP_DURATION_MINUTES",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
-  "SUSPECT_REPORTED_AGE"
+  "SEARCH_BASIS_CONSENT_FLAG",
+  "SUSPECT_REPORTED_AGE",
+  "FIREARM_FLAG"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
@@ -238,30 +253,33 @@ library("neuralnet")
 len_m <- length(colnames(m_2))
 f <- as.formula(
   paste(
-    paste(colnames(m_2)[c(len_m)], collapse = " + "),
+    paste(colnames(m_2)[c(len_m - 1, len_m)], collapse = " + "),
     " ~",
-    paste(colnames(m_2)[-c(len_m)], collapse = " + ")
+    paste(colnames(m_2)[-c(len_m - 1, len_m)], collapse = " + ")
   )
 )
 
 net.sqrt <- neuralnet(
   formula = f,
   data=training,
-  hidden=c(2 * length(features)),
+  hidden=12,
   stepmax = 1e6,
   threshold=0.01, # If weight does not change more than threshold consider stable
-  linear.output = FALSE
+  linear.output = TRUE
 )
 
 plot(net.sqrt)
 
 simplify <- function(x) if (x <= 0.5) "Y" else "N"
+simplify2 <- function(x) if (x[1] > 0.5) "Y" else "N"
 
-test_arrest <- test[, c(len_m)]
-simp_test_arrest <- as.factor(sapply(test_arrest, simplify))
-predict_arrest <- compute(net.sqrt, test[, -c(len_m)])
-predict_arrest <- predict_arrest$net.result
-simp_predict_arrest <- as.factor(sapply(predict_arrest, simplify))
+test_arrest <- test[, c(len_m - 1, len_m)]
+# simp_test_arrest <- as.factor(sapply(test_arrest, simplify))
+simp_test_arrest <- as.factor(apply(test_arrest, 1, simplify2))
+predict_arrest <- compute(net.sqrt, test[, -c(len_m - 1, len_m)])
+predict_arrest_result <- as.matrix.data.frame(predict_arrest$net.result)
+# simp_predict_arrest <- as.factor(sapply(predict_arrest, simplify))
+simp_predict_arrest <- as.factor(apply(predict_arrest_result, 1, simplify2))
 table_k <- table(test=simp_test_arrest, predict=simp_predict_arrest)
 
 accuracy_k <- sum(diag(table_k)) / sum(table_k)

@@ -6,13 +6,13 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
 
 file_path <- "./SQF_clean.csv"
 
@@ -85,7 +85,7 @@ features <- c(
   "SEARCH_BASIS_ADMISSION_FLAG",
   "SEARCH_BASIS_CONSENT_FLAG",
   "SEARCH_BASIS_HARD_OBJECT_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "SEARCH_BASIS_OTHER_FLAG",
   "SEARCH_BASIS_OUTLINE_FLAG",
   # "DEMEANOR_OF_PERSON_STOPPED",
@@ -195,17 +195,18 @@ for (feature in c(features, dependent)) {
   }
 }
 
+
+
 ##### C5.0 #####
 library("C50")
 accuracies<-array( dim=c(10,0) )
 for (i in 1:10){
-
+    
   ##### Split data ######
   df_rows <- nrow(sqf_df)
   idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
   test <- sqf_df[idx, ]
   training <- sqf_df[-idx, ]
-
   
   myC50Tree <- C5.0(
     SUSPECT_ARRESTED_FLAG ~ .,

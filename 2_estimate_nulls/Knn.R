@@ -6,15 +6,16 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
 
 file_path <- "./SQF_clean.csv"
+
 
 df <- read.csv(
   file=file_path,
@@ -41,17 +42,19 @@ df <- read.csv(
 #               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION",
 #               "STOP_LOCATION_PRECINCT")
 features <- c(
-  "SUSPECTED_CRIME_DESCRIPTION",
   "SEARCHED_FLAG",
+  "SUSPECTED_CRIME_DESCRIPTION",
+  "OTHER_CONTRABAND_FLAG",
   "MONTH2",
   "WEAPON_FOUND_FLAG",
-  "FIREARM_FLAG",
-  "OTHER_CONTRABAND_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  "STOP_DURATION_MINUTES",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
-  "SUSPECT_REPORTED_AGE"
+  "SEARCH_BASIS_CONSENT_FLAG",
+  "SUSPECT_REPORTED_AGE",
+  "FIREARM_FLAG"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
@@ -178,6 +181,8 @@ m_2 <- as.data.frame(cbind(m, SUSPECT_ARRESTED_FLAG=sqf_df$SUSPECT_ARRESTED_FLAG
 library(plyr)
 m_2$SUSPECT_ARRESTED_FLAG <- factor(m_2$SUSPECT_ARRESTED_FLAG)
 m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="N"))
+
+##### kNN #####
 library(kknn)
 for (i in 1:10){
   ##### Split data ######
@@ -189,7 +194,7 @@ for (i in 1:10){
   ##### kNN #####
   
   k_seq = c(1, 2, 5, 10, 15, 20)
-
+  
   accuracies<-array( dim=c(6,0) )
   a<-1
   for (k in k_seq) {
@@ -204,7 +209,7 @@ for (i in 1:10){
     test_arrest <- test$SUSPECT_ARRESTED_FLAG
     table_k <- table(test_arrest, predict_arrest)
     accuracies[a]<- sum(diag(table_k)) / sum(table_k)
-   # print(paste("Table, k=", k, ":"))
+    # print(paste("Table, k=", k, ":"))
     #print(table_k)
     #print(paste("Accuracy: ", accuracies[i]))
     a<-a+1

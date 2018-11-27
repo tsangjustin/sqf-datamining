@@ -6,13 +6,14 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -39,18 +40,33 @@ df <- read.csv(
 #               "SUSPECTS_ACTIONS_IDENTIFY_CRIME_PATTERN_FLAG",
 #               "SUSPECT_REPORTED_AGE", "SUSPECT_SEX", "SUSPECT_RACE_DESCRIPTION",
 #               "STOP_LOCATION_PRECINCT")
+# features <- c(
+#   "SUSPECTED_CRIME_DESCRIPTION",
+#   "SEARCHED_FLAG",
+#   "MONTH2",
+#   "WEAPON_FOUND_FLAG",
+#   "FIREARM_FLAG",
+#   "OTHER_CONTRABAND_FLAG",
+#   # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+#   "STOP_LOCATION_PRECINCT",
+#   "JURISDICTION_DESCRIPTION",
+#   "STOP_FRISK_TIME_MINUTES",
+#   "SUSPECT_REPORTED_AGE"
+# )
 features <- c(
-  "SUSPECTED_CRIME_DESCRIPTION",
   "SEARCHED_FLAG",
+  "SUSPECTED_CRIME_DESCRIPTION",
+  "OTHER_CONTRABAND_FLAG",
   "MONTH2",
   "WEAPON_FOUND_FLAG",
-  "FIREARM_FLAG",
-  "OTHER_CONTRABAND_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  "STOP_DURATION_MINUTES",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
-  "SUSPECT_REPORTED_AGE"
+  "SEARCH_BASIS_CONSENT_FLAG",
+  "SUSPECT_REPORTED_AGE",
+  "FIREARM_FLAG"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 sqf_df <- df[c(features, dependent)]
@@ -180,7 +196,7 @@ m_2$SUSPECT_ARRESTED_FLAG <- revalue(m_2$SUSPECT_ARRESTED_FLAG, c("1"="Y", "2"="
 
 ##### SVM #####
 library(e1071)
-?svm # Support Vector machine
+#?svm # Support Vector machine
 accuracies<-array( dim=c(10,0) )
 for (i in 1:10){
   

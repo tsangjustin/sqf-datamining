@@ -6,14 +6,15 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #dev.off()
 #################################################
 ###### Load data #####
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/")
+
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -85,7 +86,7 @@ features <- c(
   "SEARCH_BASIS_ADMISSION_FLAG",
   "SEARCH_BASIS_CONSENT_FLAG",
   "SEARCH_BASIS_HARD_OBJECT_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "SEARCH_BASIS_OTHER_FLAG",
   "SEARCH_BASIS_OUTLINE_FLAG",
   # "DEMEANOR_OF_PERSON_STOPPED",
@@ -189,17 +190,18 @@ for (feature in c(features, dependent)) {
              feature == "SUSPECT_RACE_DESCRIPTION" ||
              feature == "SUSPECT_BODY_BUILD_TYPE" ||
              feature == "SUSPECT_EYE_COLOR" ||
-             feature == "SUSPECT_HAIR_COLOR" ||
-             feature == "SUSPECT_ARRESTED_FLAG") {
+             feature == "SUSPECT_HAIR_COLOR") {
     sqf_df[, feature] <- factor(sqf_df[, feature])
   }
 }
+
+
+
 ##### Random Forest #####
 # install.packages("randomForest")
 library(randomForest)
 accuracies<-array( dim=c(10,0) )
 for (i in 1:10){
-
   ##### Split data ######
   df_rows <- nrow(sqf_df)
   idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
@@ -208,14 +210,14 @@ for (i in 1:10){
 
   # Treat as binary outcome with factor(Class)
   fit <- randomForest(
-    factor(SUSPECT_ARRESTED_FLAG) ~ .,
+    SUSPECT_ARRESTED_FLAG ~ .,
     data=training,
     importance = TRUE,
     ntree = 1000
   )
   
   importance(fit)
-  png(filename="./RandomForestImpotant.png", width=5500, height=5500)
+  png(filename="./RandomForestImpotant.png", width=1400, height=1029)
   varImpPlot(fit) # Plot the importance of each feature
   dev.off()
   prediction <- predict(fit, test)
@@ -227,15 +229,5 @@ for (i in 1:10){
   print(paste("Accuracy: ", accuracies[i]))
 }
 accuracies
-# predict_pct <- predict(fit, test, type = "prob")
-# accuracies <- array( dim=c(15,0) ) 
-# a<-1
-# for (i in seq(from = .15, to=.85, by=.05)){
-#   predictions<-(predict_pct[,"Y"]>i)
-#   table_i <- table(test$SUSPECT_ARRESTED_FLAG,predictions)
-#   accuracies[a] <- sum(diag(table_i)) / sum(table_i)
-#   #print(table_k)
-#   #print(paste("Accuracy: ", accuracies))
-#   a<-a+1
-# }
-# accuracies
+  
+#prediction <- predict(fit, test, type = "prob")

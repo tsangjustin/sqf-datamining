@@ -6,13 +6,14 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #################################################
 ###### Load data #####
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+# setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
+
 file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
@@ -84,7 +85,7 @@ features <- c(
   "SEARCH_BASIS_ADMISSION_FLAG",
   "SEARCH_BASIS_CONSENT_FLAG",
   "SEARCH_BASIS_HARD_OBJECT_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "SEARCH_BASIS_OTHER_FLAG",
   "SEARCH_BASIS_OUTLINE_FLAG",
   # "DEMEANOR_OF_PERSON_STOPPED",
@@ -193,50 +194,43 @@ for (feature in c(features, dependent)) {
   }
 }
 
+
 ##### CART #####
 library(rpart)
 library(rpart.plot) # Enhance tree plot
-#library(rattle) # Fancy tree plot
-#library(RColorBrewer) # Color needed for rattle
+library(rattle) # Fancy tree plot
+library(RColorBrewer) # Color needed for rattle
+
 accuracies<-array( dim=c(10,0) )
 for (i in 1:10){
-
+    
   ##### Split data ######
   df_rows <- nrow(sqf_df)
   idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
   test <- sqf_df[idx, ]
   training <- sqf_df[-idx, ]
-
+  
+  
   myTree <- rpart(
     SUSPECT_ARRESTED_FLAG ~ ., # Build model where SUSPECT_ARRESTED_FLAG dependent on rest features
-    data=sqf_df  
+    data=training  
   )
   
   ##### Plot Decision Tree #####
   par(mar=c(1,1,1,1))
   png(filename="./CART.png", width=1900, height=1900)
   prp(myTree)
-  #png(filename="./CART-Fancy.png", width=1900, height=1900)
-  #fancyRpartPlot(myTree)
-  #dev.off()
+  png(filename="./CART-Fancy.png", width=1900, height=1900)
+  fancyRpartPlot(myTree)
+  dev.off()
   
   test_arrest <- test$SUSPECT_ARRESTED_FLAG
-  
   predict_arrest <- predict(myTree, test, type="class")
-  #predict_pct <- predict(myTree, test)
   table_k <- table(test_arrest, predict_arrest)
   accuracies[i] <- sum(diag(table_k)) / sum(table_k)
   print("Table CART D-Tree")
   print(table_k)
   print(paste("Accuracy: ", accuracies[i]))
 }
+
 accuracies
-# for (i in seq(from = .15, to=.85, by=.05)){
-#   predictions<-(predict_pct[,"Y"]>i)
-#   table_i <- table(test_arrest,predictions)
-#   accuracy_i <- sum(diag(table_i)) / sum(table_i)
-#   #print(table_k)
-#   print(paste("Accuracy: ", accuracy_i))
-# }
-
-

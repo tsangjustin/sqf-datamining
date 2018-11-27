@@ -6,21 +6,20 @@
 #  Last Name  : Tsang
 #  Id			    : 
 #  Date       : October 29, 2018
-#  Comments   : NULLs and outliers replaced with mode
+#  Comments   : NULLs and outliers removed
 
 rm(list=ls())
 #################################################
 ###### Load data #####
-#setwd("/Users/justint/Documents/2018-Fall/CS-513/Project/2_estimate_nulls/")
-setwd("/MDM/2018 Fall/CS513/sqf-datamining/2_estimate_nulls/")
+file_path <- "/Users/justint/Documents/2018-Fall/CS-513/Project/1_remove_null_outlier/SQF_clean.csv"
+# file_path <- "/MDM/2018 Fall/CS513/sqf-datamining/1_remove_null_outlier/SQF_Clean.csv"
 
-file_path <- "./SQF_clean.csv"
 
 df <- read.csv(
   file=file_path,
   header=TRUE,
   sep=",",
-  na.strings=c("(null)", "", "("),
+  na.strings=c("(null)", "", "(", "#N/A", "<NA>"),
   stringsAsFactors = FALSE
 )
 
@@ -99,18 +98,33 @@ df <- read.csv(
 #   "SUSPECT_HAIR_COLOR",
 #   "STOP_LOCATION_PRECINCT"
 # )
+# features <- c(
+#   "SUSPECTED_CRIME_DESCRIPTION",
+#   "SEARCHED_FLAG",
+#   "MONTH2",
+#   "WEAPON_FOUND_FLAG",
+#   "FIREARM_FLAG",
+#   "OTHER_CONTRABAND_FLAG",
+#   # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+#   "STOP_LOCATION_PRECINCT",
+#   "JURISDICTION_DESCRIPTION",
+#   "STOP_FRISK_TIME_MINUTES",
+#   "SUSPECT_REPORTED_AGE"
+# )
 features <- c(
-  "SUSPECTED_CRIME_DESCRIPTION",
   "SEARCHED_FLAG",
+  "SUSPECTED_CRIME_DESCRIPTION",
+  "OTHER_CONTRABAND_FLAG",
   "MONTH2",
   "WEAPON_FOUND_FLAG",
-  "FIREARM_FLAG",
-  "OTHER_CONTRABAND_FLAG",
-  #"SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
+  "STOP_DURATION_MINUTES",
+  # "SEARCH_BASIS_INCIDENTAL_TO_ARREST_FLAG",
   "STOP_LOCATION_PRECINCT",
   "JURISDICTION_DESCRIPTION",
   "STOP_FRISK_TIME_MINUTES",
-  "SUSPECT_REPORTED_AGE"
+  "SEARCH_BASIS_CONSENT_FLAG",
+  "SUSPECT_REPORTED_AGE",
+  "FIREARM_FLAG"
 )
 dependent <- c("SUSPECT_ARRESTED_FLAG")
 
@@ -216,18 +230,19 @@ for (feature in c(features, dependent)) {
 # install.packages('e1071', dependencies = TRUE)
 library(class)
 library(e1071)
-
-##### Main function #####
-class(sqf_df)
-prop.table
-
+  
 accuracies<-array( dim=c(10,0) )
 for (i in 1:10){
   ##### Split data ######
   df_rows <- nrow(sqf_df)
-  idx <- sample(x=df_rows, size=as.integer(0.20*df_rows))
+  idx <- sample(x=df_rows, size=as.integer(0.25*df_rows))
   test <- sqf_df[idx, ]
   training <- sqf_df[-idx, ]
+  
+  
+  ##### Main function #####
+  class(sqf_df)
+  prop.table
   
   # Get table of percentage for class and survived
   ##### Naive bayes #####
