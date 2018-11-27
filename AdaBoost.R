@@ -5,8 +5,7 @@ rm(list=ls())
 
 
 df <- read.csv(
-  #"/Users/apple/Downloads/sqf-datamining-master/1_remove_null_outlier/SQF_clean.csv",
-  "/Users/apple/Downloads/sqf-datamining-master/2_estimate_nulls/SQF_clean.csv", 
+  "/Users/apple/sqf-datamining/1_remove_null_outlier/SQF_clean.csv",
   header=TRUE,
   sep=",",
   na.strings=c("(null)", "", "V", "(", "#N/A", "<NA>")
@@ -168,7 +167,7 @@ for (i in 1:10){
   #prediction$confusion
   #prediction$error
   table_fit <- table(test$SUSPECT_ARRESTED_FLAG,prediction$class)
-  accuracies[i] <- sum(diag(table_fit)) / sum(table_fit)
+  accuracies[i] <- 1- prediction$error
   print("Table Boosting")
   print(table_fit)
   print(paste("Accuracy: ", accuracies[i]))
